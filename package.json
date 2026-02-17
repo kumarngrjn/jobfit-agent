@@ -1,0 +1,43 @@
+{
+  "name": "jobfit-agent",
+  "version": "1.0.0",
+  "description": "AI-powered job application tracker and fit analyzer — given a job posting and your resume, produces a complete application package with fit analysis, tailored cover letter, resume bullets, and interview prep.",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "start:mock": "MOCK_LLM=true node dist/server.js",
+    "analyze": "node dist/run-orchestrator.js",
+    "analyze:mock": "MOCK_LLM=true node dist/run-orchestrator.js",
+    "dev": "tsx src/server.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "ai",
+    "job-search",
+    "agent",
+    "anthropic",
+    "claude",
+    "resume",
+    "cover-letter",
+    "interview-prep"
+  ],
+  "author": "Kumar Nagarajan",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
+    "dotenv": "^16.6.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.30",
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

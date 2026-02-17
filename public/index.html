@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JobFit Agent</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #232736;
+      --border: #2e3348;
+      --text: #e4e6f0;
+      --text-dim: #8b8fa3;
+      --accent: #6c5ce7;
+      --accent-light: #a29bfe;
+      --green: #00b894;
+      --green-bg: rgba(0,184,148,0.12);
+      --yellow: #fdcb6e;
+      --yellow-bg: rgba(253,203,110,0.12);
+      --red: #ff6b6b;
+      --red-bg: rgba(255,107,107,0.12);
+      --blue: #74b9ff;
+      --blue-bg: rgba(116,185,255,0.12);
+      --orange: #e17055;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .app { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-light), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .header p { color: var(--text-dim); font-size: 1rem; }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Form */
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 12px 16px;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+    textarea:focus { outline: none; border-color: var(--accent); }
+    textarea::placeholder { color: var(--text-dim); }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .form-group { margin-bottom: 16px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #5f3dc4);
+      color: white;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(108,92,231,0.4); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-center { display: flex; justify-content: center; margin-top: 8px; }
+
+    /* Score */
+    .score-section { text-align: center; padding: 32px; }
+    .score-ring {
+      width: 140px; height: 140px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      position: relative;
+    }
+    .score-ring svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
+    .score-number { font-size: 2.5rem; font-weight: 700; z-index: 1; }
+    .score-label { color: var(--text-dim); font-size: 0.9rem; }
+
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; }
+    .stat-label { font-size: 0.8rem; color: var(--text-dim); margin-top: 2px; }
+
+    /* Tags */
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .tag-strong { background: var(--green-bg); color: var(--green); }
+    .tag-moderate { background: var(--yellow-bg); color: var(--yellow); }
+    .tag-weak { background: var(--red-bg); color: var(--red); }
+    .tag-critical { background: var(--red-bg); color: var(--red); }
+    .tag-minor { background: var(--blue-bg); color: var(--blue); }
+    .tag-required { background: var(--red-bg); color: var(--red); }
+    .tag-preferred { background: var(--yellow-bg); color: var(--yellow); }
+    .tag-nice-to-have { background: var(--blue-bg); color: var(--blue); }
+
+    /* Match items */
+    .match-item {
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .match-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .match-skill { font-weight: 600; font-size: 0.95rem; }
+    .match-evidence { font-size: 0.85rem; color: var(--text-dim); }
+
+    /* Reframe */
+    .reframe-item {
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border-left: 3px solid var(--accent);
+    }
+    .reframe-from { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 6px; }
+    .reframe-arrow { color: var(--accent-light); margin: 6px 0; font-size: 0.85rem; }
+    .reframe-to { font-size: 0.9rem; font-weight: 500; color: var(--green); }
+    .reframe-target { font-size: 0.8rem; color: var(--text-dim); margin-top: 6px; }
+
+    /* List items */
+    .list-item {
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    /* Two column layout */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* Job info */
+    .job-info { display: flex; flex-wrap: wrap; gap: 20px; }
+    .job-field label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+    .job-field p { font-size: 0.95rem; font-weight: 500; margin-top: 2px; }
+
+    /* Tech stack pills */
+    .tech-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .tech-pill {
+      padding: 4px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    /* Loading */
+    .loading { text-align: center; padding: 48px; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-step { color: var(--text-dim); font-size: 0.9rem; margin-top: 8px; }
+
+    /* Metadata */
+    .meta-row {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* Error */
+    .error-box {
+      background: var(--red-bg);
+      border: 1px solid rgba(255,107,107,0.3);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      color: var(--red);
+      font-size: 0.9rem;
+    }
+
+    /* Section toggle */
+    .section-header {
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .section-header .count {
+      background: var(--surface2);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+    }
+    .tab {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent-light); border-bottom-color: var(--accent); }
+
+    /* Content block (cover letter, etc) */
+    .content-block {
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      padding: 20px 24px;
+      font-size: 0.9rem;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      color: var(--text);
+    }
+
+    /* Validation badge */
+    .validation-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .validation-passed { background: var(--green-bg); color: var(--green); }
+    .validation-failed { background: var(--red-bg); color: var(--red); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useCallback } = React;
+
+    // --- Score Ring ---
+    function ScoreRing({ score }) {
+      const radius = 58;
+      const circumference = 2 * Math.PI * radius;
+      const offset = circumference - (score / 100) * circumference;
+      const color = score >= 80 ? '#00b894' : score >= 60 ? '#fdcb6e' : '#ff6b6b';
+
+      return (
+        <div className="score-ring">
+          <svg width="140" height="140">
+            <circle cx="70" cy="70" r={radius} fill="none" stroke="#2e3348" strokeWidth="8" />
+            <circle cx="70" cy="70" r={radius} fill="none" stroke={color} strokeWidth="8"
+              strokeDasharray={circumference} strokeDashoffset={offset}
+              strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1s ease' }} />
+          </svg>
+          <span className="score-number" style={{ color }}>{score}</span>
+        </div>
+      );
+    }
+
+    // --- Match Card ---
+    function MatchCard({ item }) {
+      return (
+        <div className="match-item">
+          <div className="match-header">
+            <span className="match-skill">{item.skill}</span>
+            <span className={`tag tag-${item.strength}`}>{item.strength}</span>
+          </div>
+          <div className="match-evidence">{item.evidence}</div>
+        </div>
+      );
+    }
+
+    // --- Gap Card ---
+    function GapCard({ item }) {
+      return (
+        <div className="match-item">
+          <div className="match-header">
+            <span className="match-skill">{item.skill}</span>
+            <span className={`tag tag-${item.severity}`}>{item.severity}</span>
+          </div>
+          <div className="match-evidence">{item.suggestion}</div>
+        </div>
+      );
+    }
+
+    // --- Reframe Card ---
+    function ReframeCard({ item }) {
+      return (
+        <div className="reframe-item">
+          <div className="reframe-from">{item.existingExperience}</div>
+          <div className="reframe-arrow">&#x2192; Reframe as:</div>
+          <div className="reframe-to">{item.reframedAs}</div>
+          <div className="reframe-target">Targets: {item.targetRequirement}</div>
+        </div>
+      );
+    }
+
+    // --- Output Tabs ---
+    function OutputTabs({ outputs, validation }) {
+      const [activeTab, setActiveTab] = useState('coverLetter');
+
+      if (!outputs) return null;
+
+      const tabs = [
+        { id: 'coverLetter', label: 'Cover Letter', icon: '\u2709\uFE0F' },
+        { id: 'tailoredBullets', label: 'Resume Bullets', icon: '\uD83D\uDCDD' },
+        { id: 'interviewPrep', label: 'Interview Prep', icon: '\uD83C\uDFA4' },
+      ];
+
+      return (
+        <div className="card">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <h2>{'\uD83D\uDCE6'} Generated Outputs</h2>
+            {validation && (
+              <span className={`validation-badge ${validation.passed ? 'validation-passed' : 'validation-failed'}`}>
+                {validation.passed ? '\u2713 Validated' : '\u26A0 Issues'}
+              </span>
+            )}
+          </div>
+          <div className="tabs">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`tab ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.icon} {tab.label}
+              </button>
+            ))}
+          </div>
+          <div className="content-block">
+            {activeTab === 'coverLetter' && (outputs.coverLetter || 'No cover letter generated.')}
+            {activeTab === 'tailoredBullets' && (outputs.tailoredBullets || 'No bullets generated.')}
+            {activeTab === 'interviewPrep' && (outputs.interviewPrep || 'No interview prep generated.')}
+          </div>
+        </div>
+      );
+    }
+
+    // --- Results View ---
+    function Results({ data }) {
+      const { parsedJD, parsedResume, fitAnalysis, metadata, outputs, validation } = data;
+      const fit = fitAnalysis;
+
+      return (
+        <div>
+          {/* Job Overview */}
+          <div className="card">
+            <h2>&#x1F3E2; Job Overview</h2>
+            <div className="job-info">
+              <div className="job-field"><label>Company</label><p>{parsedJD.company}</p></div>
+              <div className="job-field"><label>Role</label><p>{parsedJD.role}</p></div>
+              <div className="job-field"><label>Level</label><p>{parsedJD.level}</p></div>
+              {parsedJD.team && <div className="job-field"><label>Team</label><p>{parsedJD.team}</p></div>}
+              {parsedJD.salaryRange && <div className="job-field"><label>Salary</label><p>{parsedJD.salaryRange}</p></div>}
+            </div>
+            <div style={{ marginTop: 16 }}>
+              <label>Tech Stack</label>
+              <div className="tech-pills">
+                {parsedJD.techStack.map((t, i) => <span className="tech-pill" key={i}>{t}</span>)}
+              </div>
+            </div>
+          </div>
+
+          {/* Score */}
+          <div className="card score-section">
+            <ScoreRing score={fit.overallScore} />
+            <div className="score-label">Overall Fit Score</div>
+            <div className="stats-row">
+              <div className="stat">
+                <div className="stat-value" style={{ color: 'var(--green)' }}>{fit.strongMatches.length}</div>
+                <div className="stat-label">Strong Matches</div>
+              </div>
+              <div className="stat">
+                <div className="stat-value" style={{ color: 'var(--yellow)' }}>{fit.partialMatches.length}</div>
+                <div className="stat-label">Partial Matches</div>
+              </div>
+              <div className="stat">
+                <div className="stat-value" style={{ color: 'var(--red)' }}>{fit.gaps.length}</div>
+                <div className="stat-label">Gaps</div>
+              </div>
+              <div className="stat">
+                <div className="stat-value" style={{ color: 'var(--accent-light)' }}>{fit.reframingSuggestions.length}</div>
+                <div className="stat-label">Reframe Opps</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Two column: Matches and Gaps */}
+          <div className="two-col">
+            <div className="card">
+              <h2>&#x2705; Strong Matches</h2>
+              {fit.strongMatches.map((m, i) => <MatchCard key={i} item={m} />)}
+            </div>
+            <div className="card">
+              <h2>&#x26A0;&#xFE0F; Gaps to Address</h2>
+              {fit.gaps.map((g, i) => <GapCard key={i} item={g} />)}
+            </div>
+          </div>
+
+          {/* Partial Matches */}
+          {fit.partialMatches.length > 0 && (
+            <div className="card">
+              <h2>&#x1F504; Partial / Transferable Matches</h2>
+              {fit.partialMatches.map((m, i) => <MatchCard key={i} item={m} />)}
+            </div>
+          )}
+
+          {/* Reframing */}
+          {fit.reframingSuggestions.length > 0 && (
+            <div className="card">
+              <h2>&#x1F3AF; Reframing Suggestions</h2>
+              {fit.reframingSuggestions.map((r, i) => <ReframeCard key={i} item={r} />)}
+            </div>
+          )}
+
+          {/* Two column: Deal Breakers and Competitive Advantages */}
+          <div className="two-col">
+            {fit.dealBreakers.length > 0 && (
+              <div className="card">
+                <h2>&#x1F6A8; Potential Deal Breakers</h2>
+                {fit.dealBreakers.map((d, i) => <div className="list-item" key={i} style={{ borderLeft: '3px solid var(--red)' }}>{d}</div>)}
+              </div>
+            )}
+            {fit.competitiveAdvantages.length > 0 && (
+              <div className="card">
+                <h2>&#x1F4AA; Competitive Advantages</h2>
+                {fit.competitiveAdvantages.map((a, i) => <div className="list-item" key={i} style={{ borderLeft: '3px solid var(--green)' }}>{a}</div>)}
+              </div>
+            )}
+          </div>
+
+          {/* Generated Outputs (Phase 2) */}
+          {outputs && <OutputTabs outputs={outputs} validation={validation} />}
+
+          {/* Metadata */}
+          {metadata && (
+            <div className="meta-row">
+              <span>Model: {metadata.model}</span>
+              <span>Total: {metadata.totalDurationMs ?? metadata.durations?.totalMs}ms</span>
+              <span>Tokens: {(metadata.tokenUsage?.totalInputTokens ?? 0) + (metadata.tokenUsage?.totalOutputTokens ?? 0)}</span>
+              <span>Est. cost: ${metadata.tokenUsage?.estimatedCost?.toFixed(4) ?? '0.00'}</span>
+              {metadata.validationAttempts && <span>Validation: {metadata.validationAttempts} attempt{metadata.validationAttempts > 1 ? 's' : ''}</span>}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // --- Main App ---
+    function App() {
+      const [jdText, setJdText] = useState('');
+      const [resumeText, setResumeText] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [loadingStep, setLoadingStep] = useState('');
+      const [result, setResult] = useState(null);
+      const [error, setError] = useState('');
+
+      const handleAnalyze = useCallback(async () => {
+        if (!jdText.trim() || !resumeText.trim()) {
+          setError('Please provide both a job description and resume.');
+          return;
+        }
+
+        setLoading(true);
+        setError('');
+        setResult(null);
+        setLoadingStep('Sending to JobFit Agent...');
+
+        try {
+          const steps = [
+            'Parsing job description...',
+            'Parsing resume...',
+            'Analyzing fit...',
+            'Generating cover letter...',
+            'Generating resume bullets...',
+            'Generating interview prep...',
+            'Validating outputs...'
+          ];
+          let stepIndex = 0;
+          const interval = setInterval(() => {
+            stepIndex = Math.min(stepIndex + 1, steps.length - 1);
+            setLoadingStep(steps[stepIndex]);
+          }, 3000);
+
+          const res = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jdText, resumeText }),
+          });
+
+          clearInterval(interval);
+          const data = await res.json();
+
+          if (!res.ok) {
+            setError(data.error || 'Analysis failed');
+          } else {
+            setResult(data);
+          }
+        } catch (err) {
+          setError('Failed to connect to the server. Is it running?');
+        } finally {
+          setLoading(false);
+        }
+      }, [jdText, resumeText]);
+
+      return (
+        <div className="app">
+          <div className="header">
+            <h1>JobFit Agent</h1>
+            <p>AI-powered job fit analysis. Paste a JD and your resume to get started.</p>
+          </div>
+
+          {!result && !loading && (
+            <div>
+              <div className="two-col">
+                <div className="card">
+                  <h2>&#x1F4CB; Job Description</h2>
+                  <div className="form-group">
+                    <label>Paste the full job description text</label>
+                    <textarea
+                      value={jdText}
+                      onChange={e => setJdText(e.target.value)}
+                      placeholder="Paste the full job description here..."
+                      rows={10}
+                    />
+                  </div>
+                </div>
+                <div className="card">
+                  <h2>&#x1F4C4; Your Resume</h2>
+                  <div className="form-group">
+                    <label>Paste your resume text</label>
+                    <textarea
+                      value={resumeText}
+                      onChange={e => setResumeText(e.target.value)}
+                      placeholder="Paste your resume text here..."
+                      rows={10}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {error && <div className="error-box" style={{ marginBottom: 16 }}>{error}</div>}
+
+              <div className="btn-center">
+                <button className="btn btn-primary" onClick={handleAnalyze} disabled={loading}>
+                  &#x1F50D; Analyze Fit
+                </button>
+              </div>
+            </div>
+          )}
+
+          {loading && (
+            <div className="card loading">
+              <div className="spinner" />
+              <h2>Analyzing...</h2>
+              <div className="loading-step">{loadingStep}</div>
+            </div>
+          )}
+
+          {result && (
+            <div>
+              <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                <button className="btn btn-primary" onClick={() => { setResult(null); }}>
+                  &#x2190; New Analysis
+                </button>
+              </div>
+              <Results data={result} />
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

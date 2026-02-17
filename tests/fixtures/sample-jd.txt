@@ -1,0 +1,49 @@
+Staff Software Engineer — Platform Infrastructure
+Acme Cloud Inc. | San Francisco, CA (Hybrid)
+
+About Us:
+Acme Cloud is a fast-growing cloud infrastructure company serving 500+ enterprise customers.
+Our platform processes over 2 billion API requests daily. We value engineering excellence,
+ownership, and building systems that scale.
+
+About the Role:
+We're looking for a Staff Software Engineer to join our Platform Infrastructure team. You'll
+lead the design and implementation of core platform services that other engineering teams
+depend on. This is a high-impact role where you'll shape technical direction and mentor
+senior engineers.
+
+Responsibilities:
+- Lead the design and implementation of scalable, fault-tolerant distributed systems
+- Define technical strategy for the platform infrastructure team (6 engineers)
+- Own critical path services including our API gateway, service mesh, and observability stack
+- Drive cross-team technical initiatives and break down complex projects into deliverable milestones
+- Mentor senior engineers and conduct architecture reviews
+- Establish engineering best practices: testing strategies, CI/CD patterns, incident response
+- Collaborate with Product and SRE teams to balance feature velocity with system reliability
+- Contribute to on-call rotation for Tier-1 services
+
+Required Qualifications:
+- 8+ years of software engineering experience, with 2+ years at Staff/Principal level
+- Deep expertise in distributed systems design (consistency models, consensus protocols, partitioning)
+- Strong proficiency in Go or Rust for systems programming
+- Experience with Kubernetes, Docker, and container orchestration at scale
+- Track record of designing and operating systems handling 10K+ RPS
+- Experience with observability: distributed tracing (Jaeger/Zipkin), metrics (Prometheus/Grafana), logging (ELK)
+- Excellent communication skills — can explain complex technical concepts to diverse audiences
+
+Preferred Qualifications:
+- Experience with gRPC and Protocol Buffers
+- Familiarity with service mesh technologies (Istio, Envoy, Linkerd)
+- Contributions to open-source infrastructure projects
+- Experience with event-driven architectures (Kafka, NATS, Pulsar)
+- Background in developer experience / platform engineering
+- Master's degree in Computer Science or related field
+
+Tech Stack:
+Go, Rust, Kubernetes, Docker, Terraform, AWS (EKS, Lambda, DynamoDB),
+PostgreSQL, Redis, Kafka, gRPC, Prometheus, Grafana, Jaeger, ArgoCD, GitHub Actions
+
+Compensation:
+$220,000 - $280,000 base + equity + benefits
+
+We are an equal opportunity employer committed to building a diverse team.

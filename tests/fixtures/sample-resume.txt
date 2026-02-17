@@ -1,0 +1,49 @@
+KUMAR NAGARAJAN
+Senior Software Engineer
+kumar.nagarajan@email.com | github.com/kumarngrjn | San Francisco, CA
+
+SUMMARY
+Experienced software engineer with 7+ years building scalable backend systems and cloud-native
+applications. Passionate about clean architecture, developer tooling, and distributed systems.
+Currently focused on TypeScript/Node.js and cloud infrastructure.
+
+EXPERIENCE
+
+Senior Software Engineer | TechScale Inc. | Jan 2022 – Present (3 years)
+- Designed and built a real-time event processing pipeline handling 50K events/sec using Node.js and Kafka
+- Led migration of monolithic API to microservices architecture, reducing deployment time by 70%
+- Built internal developer platform with automated CI/CD using GitHub Actions and Docker
+- Mentored 3 junior engineers; led weekly architecture review sessions
+- Implemented distributed caching layer with Redis, reducing API latency by 40%
+- Technologies: TypeScript, Node.js, PostgreSQL, Redis, Kafka, Docker, AWS (ECS, RDS, SQS), GitHub Actions
+
+Software Engineer II | DataFlow Systems | Mar 2019 – Dec 2021 (2.8 years)
+- Built high-throughput data ingestion service processing 5TB/day using Python and Apache Spark
+- Designed REST APIs serving 3K+ RPS with 99.9% uptime SLA
+- Implemented observability stack: Prometheus metrics, Grafana dashboards, PagerDuty alerting
+- Contributed to open-source: authored a Prometheus exporter for custom application metrics (200+ GitHub stars)
+- Led incident response for production systems; reduced MTTR by 50% through runbook automation
+- Technologies: Python, Java, Apache Spark, PostgreSQL, Prometheus, Grafana, Terraform, AWS (EC2, S3, Lambda)
+
+Junior Software Engineer | WebCraft Solutions | Jun 2017 – Feb 2019 (1.7 years)
+- Developed full-stack web applications using React and Node.js
+- Built automated testing framework that increased test coverage from 30% to 85%
+- Managed deployments to AWS using CloudFormation
+- Technologies: JavaScript, React, Node.js, Express, MongoDB, AWS (CloudFormation, S3)
+
+EDUCATION
+
+Bachelor of Science in Computer Science | University of California, Davis | 2017
+
+SKILLS
+Languages: TypeScript, JavaScript, Python, Java, SQL
+Frameworks: Node.js, Express, React, Apache Spark
+Cloud & Infrastructure: AWS (ECS, Lambda, RDS, S3, SQS), Docker, Terraform, GitHub Actions
+Databases: PostgreSQL, Redis, MongoDB, DynamoDB
+Messaging: Kafka, SQS, RabbitMQ
+Observability: Prometheus, Grafana, PagerDuty, CloudWatch
+Methodologies: Agile/Scrum, CI/CD, TDD, Microservices Architecture
+
+CERTIFICATIONS
+- AWS Solutions Architect Associate (2023)
+- Certified Kubernetes Application Developer (CKAD) (2024)
