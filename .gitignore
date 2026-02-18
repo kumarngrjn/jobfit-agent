@@ -5,4 +5,5 @@ output/
 *.log
 .DS_Store
 *.tsbuildinfo
+.cache/
 jobfit-agent-project-spec.md

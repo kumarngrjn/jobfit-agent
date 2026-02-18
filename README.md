@@ -89,20 +89,24 @@ src/
 │   ├── jd-parser.ts        # Job description → structured data
 │   ├── resume-parser.ts    # Resume → structured data
 │   ├── gap-analyzer.ts     # JD + Resume → fit analysis
+│   ├── scraper.ts          # URL scraper for job postings (zero deps)
 │   └── generators/
 │       ├── cover-letter.ts # Tailored cover letter generation
 │       ├── resume-bullets.ts # STAR-format bullet points
 │       └── interview-prep.ts # Technical & behavioral prep
+├── utils/
+│   ├── file-parser.ts      # PDF/TXT/MD resume file parser
+│   └── cache.ts            # File-based caching with SHA-256 keys
 ├── llm/
 │   ├── client.ts           # Anthropic SDK wrapper with retries & token tracking
 │   ├── schemas.ts          # Zod schemas for all structured types
 │   ├── prompts.ts          # Prompt templates
 │   └── mock-data.ts        # Realistic mock data for offline development
-├── server.ts               # HTTP server (Node built-in, zero dependencies)
+├── server.ts               # HTTP server with multipart upload support
 ├── run-orchestrator.ts     # CLI entry point for full pipeline
 └── index.ts                # Basic pipeline entry point
 public/
-└── index.html              # React UI (single file, CDN-loaded)
+└── index.html              # React UI (URL input, file upload, CDN-loaded)
 tests/
 └── fixtures/               # Sample JD and resume for testing
 ```
@@ -150,7 +154,7 @@ Generated:
 
 - [x] Phase 1: Foundation (LLM client, parsers, basic pipeline)
 - [x] Phase 2: Agent loop (state machine, generators, validation)
-- [ ] Phase 3: URL scraping & PDF resume parsing
+- [x] Phase 3: URL scraping & PDF resume parsing
 - [ ] Phase 4: CLI with Commander.js (`jobfit analyze <url> --resume ./resume.pdf`)
 - [ ] Phase 5: SQLite storage, application tracking, Next.js dashboard
 

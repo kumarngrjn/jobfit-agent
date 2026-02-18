@@ -1,10 +1,12 @@
 import http from "http";
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync, writeFileSync, unlinkSync } from "fs";
 import { join, extname } from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import { LLMClient, getUsageSummary } from "./llm/client.js";
 import { runOrchestrator } from "./agent/orchestrator.js";
+import { scrapeJobPosting } from "./tools/scraper.js";
+import { parseFileBuffer } from "./utils/file-parser.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -41,6 +43,61 @@ function readBody(req: http.IncomingMessage): Promise<string> {
   });
 }
 
+function readBodyBuffer(req: http.IncomingMessage): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    req.on("data", (chunk: Buffer) => chunks.push(chunk));
+    req.on("end", () => resolve(Buffer.concat(chunks)));
+    req.on("error", reject);
+  });
+}
+
+/**
+ * Parse a multipart/form-data body.
+ * Returns a map of field names to their values (string or { filename, buffer }).
+ */
+function parseMultipart(
+  body: Buffer,
+  contentType: string
+): Record<string, string | { filename: string; buffer: Buffer }> {
+  const boundaryMatch = contentType.match(/boundary=(.+)/);
+  if (!boundaryMatch) throw new Error("No boundary in content-type");
+
+  const boundary = boundaryMatch[1].replace(/^["']|["']$/g, "");
+  const parts: Record<string, string | { filename: string; buffer: Buffer }> = {};
+
+  const bodyStr = body.toString("latin1"); // preserve binary
+  const segments = bodyStr.split(`--${boundary}`);
+
+  for (const segment of segments) {
+    if (segment.trim() === "" || segment.trim() === "--") continue;
+
+    const headerEnd = segment.indexOf("\r\n\r\n");
+    if (headerEnd === -1) continue;
+
+    const headers = segment.slice(0, headerEnd);
+    const content = segment.slice(headerEnd + 4).replace(/\r\n$/, "");
+
+    const nameMatch = headers.match(/name="([^"]+)"/);
+    if (!nameMatch) continue;
+
+    const name = nameMatch[1];
+    const filenameMatch = headers.match(/filename="([^"]+)"/);
+
+    if (filenameMatch) {
+      // File field — convert back to buffer
+      parts[name] = {
+        filename: filenameMatch[1],
+        buffer: Buffer.from(content, "latin1"),
+      };
+    } else {
+      parts[name] = content.trim();
+    }
+  }
+
+  return parts;
+}
+
 // --- Request Handler ---
 
 async function handler(req: http.IncomingMessage, res: http.ServerResponse) {
@@ -61,15 +118,59 @@ async function handler(req: http.IncomingMessage, res: http.ServerResponse) {
   // API: POST /api/analyze
   if (method === "POST" && url === "/api/analyze") {
     try {
-      const rawBody = await readBody(req);
-      const { jdText, resumeText } = JSON.parse(rawBody);
+      let jdText = "";
+      let resumeText = "";
+
+      const contentType = req.headers["content-type"] ?? "";
+
+      if (contentType.includes("multipart/form-data")) {
+        // Handle multipart upload (URL + file)
+        const body = await readBodyBuffer(req);
+        const fields = parseMultipart(body, contentType);
+
+        // JD: either URL (scrape it) or pasted text
+        const jdUrl = typeof fields.jdUrl === "string" ? fields.jdUrl.trim() : "";
+        const jdTextRaw = typeof fields.jdText === "string" ? fields.jdText.trim() : "";
+
+        if (jdUrl) {
+          const scrapeResult = await scrapeJobPosting(jdUrl);
+          jdText = scrapeResult.text;
+        } else if (jdTextRaw) {
+          jdText = jdTextRaw;
+        }
+
+        // Resume: either uploaded file or pasted text
+        const resumeFile = fields.resumeFile;
+        const resumeTextRaw = typeof fields.resumeText === "string" ? fields.resumeText.trim() : "";
+
+        if (resumeFile && typeof resumeFile !== "string") {
+          const parsed = parseFileBuffer(resumeFile.buffer, resumeFile.filename);
+          resumeText = parsed.text;
+        } else if (resumeTextRaw) {
+          resumeText = resumeTextRaw;
+        }
+      } else {
+        // JSON body (backward compatible)
+        const rawBody = await readBody(req);
+        const body = JSON.parse(rawBody);
+
+        // Support jdUrl field for URL scraping
+        if (body.jdUrl?.trim()) {
+          const scrapeResult = await scrapeJobPosting(body.jdUrl);
+          jdText = scrapeResult.text;
+        } else {
+          jdText = body.jdText ?? "";
+        }
+
+        resumeText = body.resumeText ?? "";
+      }
 
       if (!jdText?.trim()) {
-        sendJSON(res, 400, { error: "Job description text is required" });
+        sendJSON(res, 400, { error: "Job description text is required. Provide jdText or jdUrl." });
         return;
       }
       if (!resumeText?.trim()) {
-        sendJSON(res, 400, { error: "Resume text is required" });
+        sendJSON(res, 400, { error: "Resume text is required. Provide resumeText or upload a file." });
         return;
       }
 
@@ -109,7 +210,7 @@ async function handler(req: http.IncomingMessage, res: http.ServerResponse) {
         },
         validation: ctx.validation,
         metadata: {
-          model: llm instanceof LLMClient ? "claude-sonnet-4-5-20250929" : "unknown",
+          model: "claude-sonnet-4-5-20250929",
           tokenUsage: result.tokenUsage,
           totalDurationMs: result.totalDurationMs,
           stateHistory: ctx.stateHistory,

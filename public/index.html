@@ -122,6 +122,65 @@
 
     .btn-center { display: flex; justify-content: center; margin-top: 8px; }
 
+    /* Input fields */
+    input[type="text"], input[type="url"] {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 10px 16px;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, input[type="url"]:focus { outline: none; border-color: var(--accent); }
+    input[type="text"]::placeholder, input[type="url"]::placeholder { color: var(--text-dim); }
+
+    .or-divider {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin: 12px 0;
+      position: relative;
+    }
+    .or-divider::before, .or-divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 40%;
+      height: 1px;
+      background: var(--border);
+    }
+    .or-divider::before { left: 0; }
+    .or-divider::after { right: 0; }
+
+    .file-upload-area {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--surface2);
+    }
+    .file-upload-area:hover { border-color: var(--accent); background: rgba(108,92,231,0.05); }
+    .file-upload-area.has-file { border-color: var(--green); background: var(--green-bg); }
+    .file-upload-label { color: var(--text-dim); font-size: 0.85rem; }
+    .file-upload-label strong { color: var(--accent-light); }
+    .file-name { color: var(--green); font-weight: 600; font-size: 0.9rem; }
+    .file-remove {
+      background: none;
+      border: none;
+      color: var(--red);
+      cursor: pointer;
+      font-size: 0.8rem;
+      margin-left: 8px;
+      padding: 2px 6px;
+    }
+
     /* Score */
     .score-section { text-align: center; padding: 32px; }
     .score-ring {
@@ -540,23 +599,49 @@
 
     // --- Main App ---
     function App() {
+      const [jdUrl, setJdUrl] = useState('');
       const [jdText, setJdText] = useState('');
+      const [resumeFile, setResumeFile] = useState(null);
       const [resumeText, setResumeText] = useState('');
       const [loading, setLoading] = useState(false);
       const [loadingStep, setLoadingStep] = useState('');
       const [result, setResult] = useState(null);
       const [error, setError] = useState('');
+      const fileInputRef = React.useRef(null);
+
+      const handleFileChange = useCallback((e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const validTypes = ['.pdf', '.txt', '.md'];
+          const ext = '.' + file.name.split('.').pop().toLowerCase();
+          if (!validTypes.includes(ext)) {
+            setError('Supported file types: PDF, TXT, MD');
+            return;
+          }
+          setResumeFile(file);
+          setResumeText('');
+          setError('');
+        }
+      }, []);
+
+      const clearFile = useCallback(() => {
+        setResumeFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }, []);
 
       const handleAnalyze = useCallback(async () => {
-        if (!jdText.trim() || !resumeText.trim()) {
-          setError('Please provide both a job description and resume.');
+        const hasJD = jdUrl.trim() || jdText.trim();
+        const hasResume = resumeFile || resumeText.trim();
+
+        if (!hasJD || !hasResume) {
+          setError('Please provide both a job description (URL or text) and a resume (file or text).');
           return;
         }
 
         setLoading(true);
         setError('');
         setResult(null);
-        setLoadingStep('Sending to JobFit Agent...');
+        setLoadingStep(jdUrl.trim() ? 'Scraping job posting...' : 'Sending to JobFit Agent...');
 
         try {
           const steps = [
@@ -574,11 +659,23 @@
             setLoadingStep(steps[stepIndex]);
           }, 3000);
 
-          const res = await fetch('/api/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jdText, resumeText }),
-          });
+          let res;
+          if (jdUrl.trim() || resumeFile) {
+            // Use multipart form data
+            const formData = new FormData();
+            if (jdUrl.trim()) formData.append('jdUrl', jdUrl.trim());
+            if (jdText.trim()) formData.append('jdText', jdText.trim());
+            if (resumeFile) formData.append('resumeFile', resumeFile);
+            if (resumeText.trim()) formData.append('resumeText', resumeText.trim());
+            res = await fetch('/api/analyze', { method: 'POST', body: formData });
+          } else {
+            // Plain JSON (backward compatible)
+            res = await fetch('/api/analyze', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ jdText, resumeText }),
+            });
+          }
 
           clearInterval(interval);
           const data = await res.json();
@@ -593,13 +690,13 @@
         } finally {
           setLoading(false);
         }
-      }, [jdText, resumeText]);
+      }, [jdUrl, jdText, resumeFile, resumeText]);
 
       return (
         <div className="app">
           <div className="header">
             <h1>JobFit Agent</h1>
-            <p>AI-powered job fit analysis. Paste a JD and your resume to get started.</p>
+            <p>AI-powered job fit analysis. Paste a URL or JD text, upload your resume, and get started.</p>
           </div>
 
           {!result && !loading && (
@@ -608,24 +705,61 @@
                 <div className="card">
                   <h2>&#x1F4CB; Job Description</h2>
                   <div className="form-group">
-                    <label>Paste the full job description text</label>
+                    <label>Paste a job posting URL</label>
+                    <input
+                      type="url"
+                      value={jdUrl}
+                      onChange={e => { setJdUrl(e.target.value); if (e.target.value.trim()) setJdText(''); }}
+                      placeholder="https://boards.greenhouse.io/..."
+                    />
+                  </div>
+                  <div className="or-divider">or</div>
+                  <div className="form-group">
+                    <label>Paste the job description text</label>
                     <textarea
                       value={jdText}
-                      onChange={e => setJdText(e.target.value)}
+                      onChange={e => { setJdText(e.target.value); if (e.target.value.trim()) setJdUrl(''); }}
                       placeholder="Paste the full job description here..."
-                      rows={10}
+                      rows={8}
                     />
                   </div>
                 </div>
                 <div className="card">
                   <h2>&#x1F4C4; Your Resume</h2>
                   <div className="form-group">
+                    <label>Upload your resume (PDF, TXT, MD)</label>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      accept=".pdf,.txt,.md"
+                      style={{ display: 'none' }}
+                    />
+                    <div
+                      className={'file-upload-area' + (resumeFile ? ' has-file' : '')}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {resumeFile ? (
+                        <div>
+                          <span className="file-name">{resumeFile.name}</span>
+                          <button className="file-remove" onClick={e => { e.stopPropagation(); clearFile(); }}>&#x2715; Remove</button>
+                        </div>
+                      ) : (
+                        <div className="file-upload-label">
+                          <strong>Click to upload</strong> or drag and drop<br/>
+                          PDF, TXT, or MD
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="or-divider">or</div>
+                  <div className="form-group">
                     <label>Paste your resume text</label>
                     <textarea
                       value={resumeText}
-                      onChange={e => setResumeText(e.target.value)}
+                      onChange={e => { setResumeText(e.target.value); if (e.target.value.trim()) { setResumeFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; } }}
                       placeholder="Paste your resume text here..."
-                      rows={10}
+                      rows={8}
                     />
                   </div>
                 </div>
@@ -652,7 +786,7 @@
           {result && (
             <div>
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                <button className="btn btn-primary" onClick={() => { setResult(null); }}>
+                <button className="btn btn-primary" onClick={() => { setResult(null); setJdUrl(''); setJdText(''); setResumeFile(null); setResumeText(''); setError(''); if (fileInputRef.current) fileInputRef.current.value = ''; }}>
                   &#x2190; New Analysis
                 </button>
               </div>
