@@ -13,19 +13,6 @@ export enum AgentState {
   ERROR = "ERROR",
 }
 
-// --- State Transitions ---
-
-export const STATE_TRANSITIONS: Record<AgentState, AgentState[]> = {
-  [AgentState.INTAKE]: [AgentState.PARSE_JD],
-  [AgentState.PARSE_JD]: [AgentState.PARSE_RESUME, AgentState.ERROR],
-  [AgentState.PARSE_RESUME]: [AgentState.ANALYZE_FIT, AgentState.ERROR],
-  [AgentState.ANALYZE_FIT]: [AgentState.GENERATE_OUTPUTS, AgentState.ERROR],
-  [AgentState.GENERATE_OUTPUTS]: [AgentState.VALIDATE, AgentState.ERROR],
-  [AgentState.VALIDATE]: [AgentState.GENERATE_OUTPUTS, AgentState.DONE, AgentState.ERROR],
-  [AgentState.DONE]: [],
-  [AgentState.ERROR]: [],
-};
-
 // --- Generated Outputs ---
 
 export interface GeneratedOutputs {
@@ -103,12 +90,12 @@ export function createPipelineContext(
 // --- Helpers ---
 
 export function transitionTo(ctx: PipelineContext, next: AgentState): void {
-  const allowed = STATE_TRANSITIONS[ctx.currentState];
-  if (!allowed.includes(next)) {
-    throw new Error(
-      `Invalid state transition: ${ctx.currentState} → ${next}. Allowed: ${allowed.join(", ")}`
-    );
+  // Record duration on the previous state entry
+  const lastEntry = ctx.stateHistory[ctx.stateHistory.length - 1];
+  if (lastEntry && !lastEntry.durationMs) {
+    lastEntry.durationMs = Date.now() - lastEntry.timestamp;
   }
+
   ctx.stateHistory.push({ state: next, timestamp: Date.now() });
   ctx.currentState = next;
 }

@@ -45,7 +45,7 @@
     /* Header */
     .header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 16px;
     }
     .header h1 {
       font-size: 2rem;
@@ -56,6 +56,29 @@
       margin-bottom: 8px;
     }
     .header p { color: var(--text-dim); font-size: 1rem; }
+
+    /* Nav */
+    .nav {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-tab {
+      padding: 12px 28px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active { color: var(--accent-light); border-bottom-color: var(--accent); }
 
     /* Card */
     .card {
@@ -119,6 +142,16 @@
     }
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(108,92,231,0.4); }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-sm {
+      padding: 8px 18px;
+      font-size: 0.85rem;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--text); }
 
     .btn-center { display: flex; justify-content: center; margin-top: 8px; }
 
@@ -196,6 +229,18 @@
     .score-number { font-size: 2.5rem; font-weight: 700; z-index: 1; }
     .score-label { color: var(--text-dim); font-size: 0.9rem; }
 
+    .score-ring-sm {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .score-ring-sm svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
+    .score-ring-sm .score-number-sm { font-size: 0.8rem; font-weight: 700; z-index: 1; }
+
     .stats-row {
       display: flex;
       justify-content: center;
@@ -266,6 +311,10 @@
     /* Two column layout */
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* Three column layout */
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    @media (max-width: 768px) { .three-col { grid-template-columns: 1fr; } }
 
     /* Job info */
     .job-info { display: flex; flex-wrap: wrap; gap: 20px; }
@@ -379,30 +428,133 @@
     }
     .validation-passed { background: var(--green-bg); color: var(--green); }
     .validation-failed { background: var(--red-bg); color: var(--red); }
+
+    /* Table */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .data-table th {
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 14px 12px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(108,92,231,0.04); }
+    .data-table .text-right { text-align: right; }
+    .data-table .text-center { text-align: center; }
+
+    /* Checkbox */
+    .checkbox {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* Select */
+    select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    select:focus { outline: none; border-color: var(--accent); }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-dim);
+    }
+    .empty-state h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--text); }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* Compare cards */
+    .compare-grid { display: grid; gap: 20px; }
+    .compare-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+    }
+    .compare-card.best { border-color: var(--green); }
+    .compare-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
+    .compare-card .role-text { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 16px; }
+    .compare-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-row:last-child { border-bottom: none; }
+    .compare-label { color: var(--text-dim); }
+
+    /* Totals row */
+    .totals-row td {
+      font-weight: 700;
+      border-top: 2px solid var(--border);
+      padding-top: 16px;
+    }
   </style>
 </head>
 <body>
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useCallback } = React;
+    const { useState, useEffect, useCallback } = React;
+
+    // --- Helpers ---
+    function formatTokens(n) {
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+      return '' + n;
+    }
 
     // --- Score Ring ---
-    function ScoreRing({ score }) {
-      const radius = 58;
+    function ScoreRing({ score, size }) {
+      const sz = size || 140;
+      const strokeWidth = sz > 60 ? 8 : 4;
+      const radius = (sz / 2) - strokeWidth;
       const circumference = 2 * Math.PI * radius;
       const offset = circumference - (score / 100) * circumference;
       const color = score >= 80 ? '#00b894' : score >= 60 ? '#fdcb6e' : '#ff6b6b';
 
       return (
-        <div className="score-ring">
-          <svg width="140" height="140">
-            <circle cx="70" cy="70" r={radius} fill="none" stroke="#2e3348" strokeWidth="8" />
-            <circle cx="70" cy="70" r={radius} fill="none" stroke={color} strokeWidth="8"
+        <div className={sz > 60 ? 'score-ring' : 'score-ring-sm'} style={sz <= 60 ? { width: sz, height: sz } : undefined}>
+          <svg width={sz} height={sz}>
+            <circle cx={sz/2} cy={sz/2} r={radius} fill="none" stroke="#2e3348" strokeWidth={strokeWidth} />
+            <circle cx={sz/2} cy={sz/2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth}
               strokeDasharray={circumference} strokeDashoffset={offset}
               strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1s ease' }} />
           </svg>
-          <span className="score-number" style={{ color }}>{score}</span>
+          <span className={sz > 60 ? 'score-number' : 'score-number-sm'} style={{ color }}>{score}</span>
         </div>
       );
     }
@@ -514,7 +666,7 @@
 
           {/* Score */}
           <div className="card score-section">
-            <ScoreRing score={fit.overallScore} />
+            <ScoreRing score={fit.overallScore} size={140} />
             <div className="score-label">Overall Fit Score</div>
             <div className="stats-row">
               <div className="stat">
@@ -597,8 +749,257 @@
       );
     }
 
-    // --- Main App ---
-    function App() {
+    // --- History View ---
+    function HistoryView() {
+      const [runs, setRuns] = useState(null);
+      const [sort, setSort] = useState('date');
+      const [selected, setSelected] = useState(new Set());
+      const [comparing, setComparing] = useState(null);
+      const [error, setError] = useState('');
+
+      useEffect(() => {
+        fetch('/api/runs?sort=' + sort)
+          .then(r => r.json())
+          .then(data => {
+            if (Array.isArray(data)) setRuns(data);
+            else setError(data.error || 'Failed to load runs');
+          })
+          .catch(() => setError('Failed to connect to server'));
+      }, [sort]);
+
+      const toggleSelect = useCallback((dir) => {
+        setSelected(prev => {
+          const next = new Set(prev);
+          if (next.has(dir)) next.delete(dir);
+          else next.add(dir);
+          return next;
+        });
+      }, []);
+
+      const handleCompare = useCallback(async () => {
+        const dirs = Array.from(selected);
+        if (dirs.length < 2) return;
+        try {
+          const res = await fetch('/api/runs/compare', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dirs }),
+          });
+          const data = await res.json();
+          if (data.analyses) setComparing(data.analyses);
+          else setError(data.error || 'Compare failed');
+        } catch {
+          setError('Failed to connect to server');
+        }
+      }, [selected]);
+
+      if (error) return <div className="error-box">{error}</div>;
+      if (!runs) return <div className="card loading"><div className="spinner" /><p>Loading history...</p></div>;
+
+      if (comparing) {
+        const cols = comparing.length;
+        return (
+          <div>
+            <div className="toolbar">
+              <h2>&#x1F4CA; Comparison</h2>
+              <button className="btn btn-sm btn-outline" onClick={() => setComparing(null)}>&#x2190; Back to list</button>
+            </div>
+            <div className="compare-grid" style={{ gridTemplateColumns: `repeat(${Math.min(cols, 3)}, 1fr)` }}>
+              {comparing.map((a, i) => (
+                <div className={'compare-card' + (i === 0 ? ' best' : '')} key={a.dir}>
+                  {i === 0 && <div style={{ marginBottom: 8 }}><span className="tag tag-strong">Best Fit</span></div>}
+                  <h3>{a.company}</h3>
+                  <div className="role-text">{a.role}</div>
+                  <ScoreRing score={a.score} size={80} />
+                  <div style={{ marginTop: 16, textAlign: 'left' }}>
+                    <div className="compare-row">
+                      <span className="compare-label">Strong Matches</span>
+                      <span style={{ color: 'var(--green)', fontWeight: 600 }}>{a.matches}</span>
+                    </div>
+                    <div className="compare-row">
+                      <span className="compare-label">Gaps</span>
+                      <span style={{ color: 'var(--red)', fontWeight: 600 }}>{a.gaps}</span>
+                    </div>
+                    <div className="compare-row">
+                      <span className="compare-label">Advantages</span>
+                      <span style={{ color: 'var(--blue)', fontWeight: 600 }}>{a.advantages.length}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      if (runs.length === 0) {
+        return (
+          <div className="card empty-state">
+            <h3>No analyses found</h3>
+            <p>Run an analysis first using the Analyze tab or the CLI.</p>
+          </div>
+        );
+      }
+
+      return (
+        <div>
+          <div className="toolbar">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>{runs.length} application{runs.length !== 1 ? 's' : ''}</span>
+              {selected.size >= 2 && (
+                <button className="btn btn-sm btn-primary" onClick={handleCompare}>
+                  Compare {selected.size} selected
+                </button>
+              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <label style={{ marginBottom: 0, fontSize: '0.8rem' }}>Sort by:</label>
+              <select value={sort} onChange={e => setSort(e.target.value)}>
+                <option value="date">Date</option>
+                <option value="score">Score</option>
+                <option value="cost">Cost</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 40 }}></th>
+                  <th>Date</th>
+                  <th>Company</th>
+                  <th>Role</th>
+                  <th className="text-center">Score</th>
+                  <th className="text-center">Valid</th>
+                  <th className="text-right">Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {runs.map(run => (
+                  <tr key={run.dir}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="checkbox"
+                        checked={selected.has(run.dir)}
+                        onChange={() => toggleSelect(run.dir)}
+                      />
+                    </td>
+                    <td style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>{run.date}</td>
+                    <td style={{ fontWeight: 600 }}>{run.company}</td>
+                    <td style={{ color: 'var(--text-dim)' }}>{run.role}</td>
+                    <td className="text-center">
+                      {run.score != null ? <ScoreRing score={run.score} size={44} /> : <span style={{ color: 'var(--text-dim)' }}>--</span>}
+                    </td>
+                    <td className="text-center">
+                      {run.validated === true && <span className="validation-badge validation-passed">&#x2713;</span>}
+                      {run.validated === false && <span className="validation-badge validation-failed">&#x2717;</span>}
+                      {run.validated == null && <span style={{ color: 'var(--text-dim)' }}>--</span>}
+                    </td>
+                    <td className="text-right" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                      {run.cost != null ? '$' + run.cost.toFixed(4) : '--'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    // --- Costs View ---
+    function CostsView() {
+      const [data, setData] = useState(null);
+      const [error, setError] = useState('');
+
+      useEffect(() => {
+        fetch('/api/runs/costs')
+          .then(r => r.json())
+          .then(d => {
+            if (d.runs) setData(d);
+            else setError(d.error || 'Failed to load costs');
+          })
+          .catch(() => setError('Failed to connect to server'));
+      }, []);
+
+      if (error) return <div className="error-box">{error}</div>;
+      if (!data) return <div className="card loading"><div className="spinner" /><p>Loading costs...</p></div>;
+
+      const { runs, totals } = data;
+
+      if (runs.length === 0) {
+        return (
+          <div className="card empty-state">
+            <h3>No cost data</h3>
+            <p>Run an analysis first to start tracking costs.</p>
+          </div>
+        );
+      }
+
+      return (
+        <div>
+          {/* Summary cards */}
+          <div className="three-col">
+            <div className="card" style={{ textAlign: 'center' }}>
+              <div className="stat-label" style={{ marginBottom: 8 }}>Total Input Tokens</div>
+              <div className="stat-value" style={{ color: 'var(--blue)' }}>{formatTokens(totals.inputTokens)}</div>
+            </div>
+            <div className="card" style={{ textAlign: 'center' }}>
+              <div className="stat-label" style={{ marginBottom: 8 }}>Total Output Tokens</div>
+              <div className="stat-value" style={{ color: 'var(--accent-light)' }}>{formatTokens(totals.outputTokens)}</div>
+            </div>
+            <div className="card" style={{ textAlign: 'center' }}>
+              <div className="stat-label" style={{ marginBottom: 8 }}>Total Cost</div>
+              <div className="stat-value" style={{ color: 'var(--green)' }}>${totals.totalCost.toFixed(4)}</div>
+            </div>
+          </div>
+
+          {/* Per-run table */}
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Company</th>
+                  <th className="text-right">Input</th>
+                  <th className="text-right">Output</th>
+                  <th className="text-right">Total</th>
+                  <th className="text-right">Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {runs.map(run => {
+                  const input = run.inputTokens ?? 0;
+                  const output = run.outputTokens ?? 0;
+                  return (
+                    <tr key={run.dir}>
+                      <td style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>{run.date}</td>
+                      <td style={{ fontWeight: 600 }}>{run.company}</td>
+                      <td className="text-right" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{formatTokens(input)}</td>
+                      <td className="text-right" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{formatTokens(output)}</td>
+                      <td className="text-right" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{formatTokens(input + output)}</td>
+                      <td className="text-right" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>${(run.cost ?? 0).toFixed(4)}</td>
+                    </tr>
+                  );
+                })}
+                <tr className="totals-row">
+                  <td colSpan={2} style={{ fontWeight: 700 }}>TOTAL ({runs.length} run{runs.length !== 1 ? 's' : ''})</td>
+                  <td className="text-right" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{formatTokens(totals.inputTokens)}</td>
+                  <td className="text-right" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{formatTokens(totals.outputTokens)}</td>
+                  <td className="text-right" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{formatTokens(totals.inputTokens + totals.outputTokens)}</td>
+                  <td className="text-right" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>${totals.totalCost.toFixed(4)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    // --- Analyze Page ---
+    function AnalyzePage() {
       const [jdUrl, setJdUrl] = useState('');
       const [jdText, setJdText] = useState('');
       const [resumeFile, setResumeFile] = useState(null);
@@ -661,7 +1062,6 @@
 
           let res;
           if (jdUrl.trim() || resumeFile) {
-            // Use multipart form data
             const formData = new FormData();
             if (jdUrl.trim()) formData.append('jdUrl', jdUrl.trim());
             if (jdText.trim()) formData.append('jdText', jdText.trim());
@@ -669,7 +1069,6 @@
             if (resumeText.trim()) formData.append('resumeText', resumeText.trim());
             res = await fetch('/api/analyze', { method: 'POST', body: formData });
           } else {
-            // Plain JSON (backward compatible)
             res = await fetch('/api/analyze', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -692,107 +1091,132 @@
         }
       }, [jdUrl, jdText, resumeFile, resumeText]);
 
+      if (result) {
+        return (
+          <div>
+            <div style={{ textAlign: 'center', marginBottom: 20 }}>
+              <button className="btn btn-primary" onClick={() => { setResult(null); setJdUrl(''); setJdText(''); setResumeFile(null); setResumeText(''); setError(''); if (fileInputRef.current) fileInputRef.current.value = ''; }}>
+                &#x2190; New Analysis
+              </button>
+            </div>
+            <Results data={result} />
+          </div>
+        );
+      }
+
+      if (loading) {
+        return (
+          <div className="card loading">
+            <div className="spinner" />
+            <h2>Analyzing...</h2>
+            <div className="loading-step">{loadingStep}</div>
+          </div>
+        );
+      }
+
+      return (
+        <div>
+          <div className="two-col">
+            <div className="card">
+              <h2>&#x1F4CB; Job Description</h2>
+              <div className="form-group">
+                <label>Paste a job posting URL</label>
+                <input
+                  type="url"
+                  value={jdUrl}
+                  onChange={e => { setJdUrl(e.target.value); if (e.target.value.trim()) setJdText(''); }}
+                  placeholder="https://boards.greenhouse.io/..."
+                />
+              </div>
+              <div className="or-divider">or</div>
+              <div className="form-group">
+                <label>Paste the job description text</label>
+                <textarea
+                  value={jdText}
+                  onChange={e => { setJdText(e.target.value); if (e.target.value.trim()) setJdUrl(''); }}
+                  placeholder="Paste the full job description here..."
+                  rows={8}
+                />
+              </div>
+            </div>
+            <div className="card">
+              <h2>&#x1F4C4; Your Resume</h2>
+              <div className="form-group">
+                <label>Upload your resume (PDF, TXT, MD)</label>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept=".pdf,.txt,.md"
+                  style={{ display: 'none' }}
+                />
+                <div
+                  className={'file-upload-area' + (resumeFile ? ' has-file' : '')}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {resumeFile ? (
+                    <div>
+                      <span className="file-name">{resumeFile.name}</span>
+                      <button className="file-remove" onClick={e => { e.stopPropagation(); clearFile(); }}>&#x2715; Remove</button>
+                    </div>
+                  ) : (
+                    <div className="file-upload-label">
+                      <strong>Click to upload</strong> or drag and drop<br/>
+                      PDF, TXT, or MD
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="or-divider">or</div>
+              <div className="form-group">
+                <label>Paste your resume text</label>
+                <textarea
+                  value={resumeText}
+                  onChange={e => { setResumeText(e.target.value); if (e.target.value.trim()) { setResumeFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; } }}
+                  placeholder="Paste your resume text here..."
+                  rows={8}
+                />
+              </div>
+            </div>
+          </div>
+
+          {error && <div className="error-box" style={{ marginBottom: 16 }}>{error}</div>}
+
+          <div className="btn-center">
+            <button className="btn btn-primary" onClick={handleAnalyze} disabled={loading}>
+              &#x1F50D; Analyze Fit
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // --- Main App ---
+    function App() {
+      const [page, setPage] = useState('analyze');
+
       return (
         <div className="app">
           <div className="header">
             <h1>JobFit Agent</h1>
-            <p>AI-powered job fit analysis. Paste a URL or JD text, upload your resume, and get started.</p>
+            <p>AI-powered job fit analysis, tracking, and comparison.</p>
           </div>
 
-          {!result && !loading && (
-            <div>
-              <div className="two-col">
-                <div className="card">
-                  <h2>&#x1F4CB; Job Description</h2>
-                  <div className="form-group">
-                    <label>Paste a job posting URL</label>
-                    <input
-                      type="url"
-                      value={jdUrl}
-                      onChange={e => { setJdUrl(e.target.value); if (e.target.value.trim()) setJdText(''); }}
-                      placeholder="https://boards.greenhouse.io/..."
-                    />
-                  </div>
-                  <div className="or-divider">or</div>
-                  <div className="form-group">
-                    <label>Paste the job description text</label>
-                    <textarea
-                      value={jdText}
-                      onChange={e => { setJdText(e.target.value); if (e.target.value.trim()) setJdUrl(''); }}
-                      placeholder="Paste the full job description here..."
-                      rows={8}
-                    />
-                  </div>
-                </div>
-                <div className="card">
-                  <h2>&#x1F4C4; Your Resume</h2>
-                  <div className="form-group">
-                    <label>Upload your resume (PDF, TXT, MD)</label>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileChange}
-                      accept=".pdf,.txt,.md"
-                      style={{ display: 'none' }}
-                    />
-                    <div
-                      className={'file-upload-area' + (resumeFile ? ' has-file' : '')}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {resumeFile ? (
-                        <div>
-                          <span className="file-name">{resumeFile.name}</span>
-                          <button className="file-remove" onClick={e => { e.stopPropagation(); clearFile(); }}>&#x2715; Remove</button>
-                        </div>
-                      ) : (
-                        <div className="file-upload-label">
-                          <strong>Click to upload</strong> or drag and drop<br/>
-                          PDF, TXT, or MD
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="or-divider">or</div>
-                  <div className="form-group">
-                    <label>Paste your resume text</label>
-                    <textarea
-                      value={resumeText}
-                      onChange={e => { setResumeText(e.target.value); if (e.target.value.trim()) { setResumeFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; } }}
-                      placeholder="Paste your resume text here..."
-                      rows={8}
-                    />
-                  </div>
-                </div>
-              </div>
+          <div className="nav">
+            <button className={'nav-tab' + (page === 'analyze' ? ' active' : '')} onClick={() => setPage('analyze')}>
+              &#x1F50D; Analyze
+            </button>
+            <button className={'nav-tab' + (page === 'history' ? ' active' : '')} onClick={() => setPage('history')}>
+              &#x1F4CB; History
+            </button>
+            <button className={'nav-tab' + (page === 'costs' ? ' active' : '')} onClick={() => setPage('costs')}>
+              &#x1F4B0; Costs
+            </button>
+          </div>
 
-              {error && <div className="error-box" style={{ marginBottom: 16 }}>{error}</div>}
-
-              <div className="btn-center">
-                <button className="btn btn-primary" onClick={handleAnalyze} disabled={loading}>
-                  &#x1F50D; Analyze Fit
-                </button>
-              </div>
-            </div>
-          )}
-
-          {loading && (
-            <div className="card loading">
-              <div className="spinner" />
-              <h2>Analyzing...</h2>
-              <div className="loading-step">{loadingStep}</div>
-            </div>
-          )}
-
-          {result && (
-            <div>
-              <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                <button className="btn btn-primary" onClick={() => { setResult(null); setJdUrl(''); setJdText(''); setResumeFile(null); setResumeText(''); setError(''); if (fileInputRef.current) fileInputRef.current.value = ''; }}>
-                  &#x2190; New Analysis
-                </button>
-              </div>
-              <Results data={result} />
-            </div>
-          )}
+          {page === 'analyze' && <AnalyzePage />}
+          {page === 'history' && <HistoryView />}
+          {page === 'costs' && <CostsView />}
         </div>
       );
     }

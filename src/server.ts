@@ -7,10 +7,12 @@ import { LLMClient, getUsageSummary } from "./llm/client.js";
 import { runOrchestrator } from "./agent/orchestrator.js";
 import { scrapeJobPosting } from "./tools/scraper.js";
 import { parseFileBuffer } from "./utils/file-parser.js";
+import { loadAllRuns } from "./utils/run-loader.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const PORT = parseInt(process.env.PORT ?? "3000", 10);
+const OUTPUT_ROOT = join(__dirname, "../output");
 
 // MIME types for static files
 const MIME_TYPES: Record<string, string> = {
@@ -144,7 +146,7 @@ async function handler(req: http.IncomingMessage, res: http.ServerResponse) {
         const resumeTextRaw = typeof fields.resumeText === "string" ? fields.resumeText.trim() : "";
 
         if (resumeFile && typeof resumeFile !== "string") {
-          const parsed = parseFileBuffer(resumeFile.buffer, resumeFile.filename);
+          const parsed = await parseFileBuffer(resumeFile.buffer, resumeFile.filename);
           resumeText = parsed.text;
         } else if (resumeTextRaw) {
           resumeText = resumeTextRaw;
@@ -221,6 +223,91 @@ async function handler(req: http.IncomingMessage, res: http.ServerResponse) {
       console.log(`✅ Analysis complete — score: ${ctx.fitAnalysis?.overallScore}/100`);
     } catch (err: any) {
       console.error("❌ Analysis failed:", err.message);
+      sendJSON(res, 500, { error: err.message });
+    }
+    return;
+  }
+
+  // API: GET /api/runs
+  if (method === "GET" && url.startsWith("/api/runs") && !url.startsWith("/api/runs/costs") && !url.startsWith("/api/runs/compare")) {
+    try {
+      const runs = loadAllRuns(OUTPUT_ROOT);
+      const params = new URL(url, `http://localhost`).searchParams;
+      const sort = params.get("sort") ?? "date";
+
+      if (sort === "score") {
+        runs.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+      } else if (sort === "cost") {
+        runs.sort((a, b) => (b.cost ?? 0) - (a.cost ?? 0));
+      } else {
+        runs.sort((a, b) => b.date.localeCompare(a.date));
+      }
+
+      sendJSON(res, 200, runs);
+    } catch (err: any) {
+      sendJSON(res, 500, { error: err.message });
+    }
+    return;
+  }
+
+  // API: GET /api/runs/costs
+  if (method === "GET" && url.startsWith("/api/runs/costs")) {
+    try {
+      const runs = loadAllRuns(OUTPUT_ROOT);
+      runs.sort((a, b) => b.date.localeCompare(a.date));
+
+      let totalInput = 0;
+      let totalOutput = 0;
+      let totalCost = 0;
+      for (const run of runs) {
+        totalInput += run.inputTokens ?? 0;
+        totalOutput += run.outputTokens ?? 0;
+        totalCost += run.cost ?? 0;
+      }
+
+      sendJSON(res, 200, {
+        runs,
+        totals: { inputTokens: totalInput, outputTokens: totalOutput, totalCost },
+      });
+    } catch (err: any) {
+      sendJSON(res, 500, { error: err.message });
+    }
+    return;
+  }
+
+  // API: POST /api/runs/compare
+  if (method === "POST" && url === "/api/runs/compare") {
+    try {
+      const rawBody = await readBody(req);
+      const { dirs } = JSON.parse(rawBody);
+
+      if (!Array.isArray(dirs) || dirs.length < 2) {
+        sendJSON(res, 400, { error: "Provide at least 2 directory names to compare." });
+        return;
+      }
+
+      const analyses: { dir: string; company: string; role: string; score: number; matches: number; gaps: number; advantages: string[] }[] = [];
+
+      for (const dir of dirs) {
+        const analysisPath = join(OUTPUT_ROOT, dir, "analysis.json");
+        if (!existsSync(analysisPath)) continue;
+
+        const data = JSON.parse(readFileSync(analysisPath, "utf-8"));
+        const fit = data.fitAnalysis;
+        analyses.push({
+          dir,
+          company: data.parsedJD?.company ?? "Unknown",
+          role: data.parsedJD?.role ?? "Unknown",
+          score: fit?.overallScore ?? 0,
+          matches: fit?.strongMatches?.length ?? 0,
+          gaps: fit?.gaps?.length ?? 0,
+          advantages: fit?.competitiveAdvantages ?? [],
+        });
+      }
+
+      analyses.sort((a, b) => b.score - a.score);
+      sendJSON(res, 200, { analyses });
+    } catch (err: any) {
       sendJSON(res, 500, { error: err.message });
     }
     return;

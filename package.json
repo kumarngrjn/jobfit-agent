@@ -4,12 +4,15 @@
   "description": "AI-powered job application tracker and fit analyzer — given a job posting and your resume, produces a complete application package with fit analysis, tailored cover letter, resume bullets, and interview prep.",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "jobfit": "dist/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
     "start:mock": "MOCK_LLM=true node dist/server.js",
-    "analyze": "node dist/run-orchestrator.js",
-    "analyze:mock": "MOCK_LLM=true node dist/run-orchestrator.js",
+    "analyze": "tsx src/cli.ts analyze",
+    "analyze:mock": "tsx src/cli.ts analyze --mock",
     "dev": "tsx src/server.ts",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -28,7 +31,9 @@
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
+    "commander": "^14.0.3",
     "dotenv": "^16.6.1",
+    "mammoth": "^1.11.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

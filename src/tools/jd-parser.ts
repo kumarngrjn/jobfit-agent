@@ -2,6 +2,7 @@ import { LLMClient, LLMCallResult } from "../llm/client.js";
 import { ParsedJD, ParsedJDSchema } from "../llm/schemas.js";
 import { buildJDParsingPrompt } from "../llm/prompts.js";
 import { mockParsedJD } from "../llm/mock-data.js";
+import { getCached, setCache } from "../utils/cache.js";
 
 export async function parseJobDescription(
   jdText: string,
@@ -12,6 +13,10 @@ export async function parseJobDescription(
   if (!jdText.trim()) {
     throw new Error("Job description text is empty");
   }
+
+  // Check cache first
+  const cached = getCached<LLMCallResult<ParsedJD>>("jd_parse", jdText);
+  if (cached) return cached;
 
   const prompt = buildJDParsingPrompt(jdText);
 
@@ -30,5 +35,6 @@ export async function parseJobDescription(
   );
   console.log(`    ${result.usage.inputTokens + result.usage.outputTokens} tokens, ${result.durationMs}ms`);
 
+  setCache("jd_parse", jdText, result);
   return result;
 }

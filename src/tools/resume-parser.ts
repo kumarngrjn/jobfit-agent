@@ -2,6 +2,7 @@ import { LLMClient, LLMCallResult } from "../llm/client.js";
 import { ParsedResume, ParsedResumeSchema } from "../llm/schemas.js";
 import { buildResumeParsingPrompt } from "../llm/prompts.js";
 import { mockParsedResume } from "../llm/mock-data.js";
+import { getCached, setCache } from "../utils/cache.js";
 
 export async function parseResume(
   resumeText: string,
@@ -12,6 +13,10 @@ export async function parseResume(
   if (!resumeText.trim()) {
     throw new Error("Resume text is empty");
   }
+
+  // Check cache first
+  const cached = getCached<LLMCallResult<ParsedResume>>("resume_parse", resumeText);
+  if (cached) return cached;
 
   const prompt = buildResumeParsingPrompt(resumeText);
 
@@ -30,5 +35,6 @@ export async function parseResume(
   );
   console.log(`    ${result.usage.inputTokens + result.usage.outputTokens} tokens, ${result.durationMs}ms`);
 
+  setCache("resume_parse", resumeText, result);
   return result;
 }

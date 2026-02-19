@@ -1,5 +1,6 @@
 import https from "https";
 import http from "http";
+import { getCached, setCache } from "../utils/cache.js";
 
 /**
  * Scrapes a job posting URL and extracts clean text.
@@ -164,6 +165,10 @@ export async function scrapeJobPosting(
 ): Promise<ScrapeResult> {
   console.log(`🌐 Scraping: ${url}`);
 
+  // Check cache first
+  const cached = getCached<ScrapeResult>("scrape", url);
+  if (cached) return cached;
+
   try {
     const html = await fetchUrl(url);
     console.log(`  ✓ Fetched ${html.length} bytes`);
@@ -180,12 +185,15 @@ export async function scrapeJobPosting(
       `  ✓ Extracted ${text.length} chars of text (title: "${title.slice(0, 60)}")`
     );
 
-    return {
+    const result: ScrapeResult = {
       text,
       title,
       url,
       contentLength: text.length,
     };
+
+    setCache("scrape", url, result);
+    return result;
   } catch (err: any) {
     console.error(`  ✗ Scraping failed: ${err.message}`);
     throw new Error(

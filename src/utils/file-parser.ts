@@ -1,13 +1,14 @@
 import { readFileSync, writeFileSync, unlinkSync } from "fs";
 import { execSync } from "child_process";
 import { extname } from "path";
+import mammoth from "mammoth";
 
 /**
  * Extracts text from various file formats.
- * Supports: .txt, .md, .pdf
+ * Supports: .txt, .md, .pdf, .docx
  *
  * PDF parsing uses the system `pdftotext` command (poppler-utils).
- * No npm dependencies required.
+ * DOCX parsing uses mammoth.
  */
 
 export interface ParsedFile {
@@ -16,7 +17,7 @@ export interface ParsedFile {
   charCount: number;
 }
 
-export function parseFile(filePath: string): ParsedFile {
+export async function parseFile(filePath: string): Promise<ParsedFile> {
   const ext = extname(filePath).toLowerCase();
 
   switch (ext) {
@@ -25,9 +26,11 @@ export function parseFile(filePath: string): ParsedFile {
       return parseTextFile(filePath);
     case ".pdf":
       return parsePDF(filePath);
+    case ".docx":
+      return await parseDOCX(filePath);
     default:
       throw new Error(
-        `Unsupported file format: ${ext}. Supported: .txt, .md, .pdf`
+        `Unsupported file format: ${ext}. Supported: .txt, .md, .pdf, .docx`
       );
   }
 }
@@ -83,13 +86,39 @@ function parsePDF(filePath: string): ParsedFile {
   }
 }
 
+async function parseDOCX(filePath: string): Promise<ParsedFile> {
+  console.log(`📄 Parsing DOCX: ${filePath}`);
+
+  try {
+    const buffer = readFileSync(filePath);
+    const result = await mammoth.extractRawText({ buffer });
+    const text = result.value.trim();
+
+    if (text.length < 50) {
+      throw new Error(
+        "DOCX text extraction returned very little text. The file might be image-based or corrupted."
+      );
+    }
+
+    console.log(`  ✓ Extracted ${text.length} chars from DOCX`);
+
+    return {
+      text,
+      format: "docx",
+      charCount: text.length,
+    };
+  } catch (err: any) {
+    throw new Error(`DOCX parsing failed: ${err.message}`);
+  }
+}
+
 /**
  * Parse text from a base64-encoded file buffer (for multipart uploads).
  */
-export function parseFileBuffer(
+export async function parseFileBuffer(
   buffer: Buffer,
   filename: string
-): ParsedFile {
+): Promise<ParsedFile> {
   const ext = extname(filename).toLowerCase();
 
   if (ext === ".txt" || ext === ".md") {
@@ -113,7 +142,22 @@ export function parseFileBuffer(
     }
   }
 
+  if (ext === ".docx") {
+    const tmpPath = `/tmp/jobfit-upload-${Date.now()}.docx`;
+    writeFileSync(tmpPath, buffer);
+    try {
+      const result = await parseDOCX(tmpPath);
+      unlinkSync(tmpPath);
+      return result;
+    } catch (err) {
+      try {
+        unlinkSync(tmpPath);
+      } catch {}
+      throw err;
+    }
+  }
+
   throw new Error(
-    `Unsupported file format: ${ext}. Supported: .txt, .md, .pdf`
+    `Unsupported file format: ${ext}. Supported: .txt, .md, .pdf, .docx`
   );
 }
