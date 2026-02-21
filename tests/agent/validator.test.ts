@@ -8,7 +8,7 @@ vi.spyOn(console, "log").mockImplementation(() => {});
 // Helper: generate a cover letter with the right content
 function makeCoverLetter(opts?: { words?: number; includeCompany?: boolean; includeSkill?: boolean }): string {
   const { words = 200, includeCompany = true, includeSkill = true } = opts ?? {};
-  const company = includeCompany ? "Acme" : "SomeOtherCorp";
+  const company = includeCompany ? "Acme Cloud" : "SomeOtherCorp";
   const skill = includeSkill ? "Distributed Systems" : "Basket Weaving";
   const filler = "lorem ipsum dolor sit amet ".repeat(Math.ceil(words / 5));
   return `Dear ${company} team, I am excited about the ${skill} opportunity. ${filler}`.split(/\s+/).slice(0, words).join(" ");
@@ -25,7 +25,7 @@ function makeBullets(opts?: { count?: number; includeTech?: boolean }): string {
 
 function makeInterviewPrep(opts?: { allSections?: boolean; includeCompany?: boolean }): string {
   const { allSections = true, includeCompany = true } = opts ?? {};
-  const company = includeCompany ? "Acme" : "";
+  const company = includeCompany ? "Acme Cloud" : "";
   let content = `# Interview Prep for ${company}\n\n`;
   if (allSections) {
     content += "## Technical Questions\n1. Q1\n2. Q2\n\n";

@@ -36,29 +36,6 @@ export interface TokenUsageSummary {
   estimatedCost: number;
 }
 
-const usageLog: { inputTokens: number; outputTokens: number }[] = [];
-
-export function getUsageSummary(): TokenUsageSummary {
-  const summary = usageLog.reduce(
-    (acc, entry) => ({
-      totalInputTokens: acc.totalInputTokens + entry.inputTokens,
-      totalOutputTokens: acc.totalOutputTokens + entry.outputTokens,
-      totalCalls: acc.totalCalls + 1,
-      estimatedCost: 0,
-    }),
-    { totalInputTokens: 0, totalOutputTokens: 0, totalCalls: 0, estimatedCost: 0 }
-  );
-
-  // Approximate pricing for Claude Sonnet (per million tokens)
-  const inputCostPerM = 3.0;
-  const outputCostPerM = 15.0;
-  summary.estimatedCost =
-    (summary.totalInputTokens / 1_000_000) * inputCostPerM +
-    (summary.totalOutputTokens / 1_000_000) * outputCostPerM;
-
-  return summary;
-}
-
 // --- Sleep with jitter ---
 
 function sleepWithJitter(baseMs: number, attempt: number): Promise<void> {
@@ -75,6 +52,7 @@ export class LLMClient {
   private baseDelayMs: number;
   private maxTokens: number;
   private mockMode: boolean;
+  private usageLog: { inputTokens: number; outputTokens: number }[] = [];
 
   constructor(config: LLMClientConfig = {}) {
     this.mockMode = process.env.MOCK_LLM === "true";
@@ -143,7 +121,7 @@ export class LLMClient {
           inputTokens: response.usage.input_tokens,
           outputTokens: response.usage.output_tokens,
         };
-        usageLog.push(usage);
+        this.usageLog.push(usage);
 
         // Extract text content
         const textBlock = response.content.find((b) => b.type === "text");
@@ -214,7 +192,7 @@ export class LLMClient {
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
     };
-    usageLog.push(usage);
+    this.usageLog.push(usage);
 
     const textBlock = response.content.find((b) => b.type === "text");
     if (!textBlock || textBlock.type !== "text") {
@@ -227,5 +205,26 @@ export class LLMClient {
       model: this.model,
       durationMs,
     };
+  }
+
+  getUsageSummary(): TokenUsageSummary {
+    const summary = this.usageLog.reduce(
+      (acc, entry) => ({
+        totalInputTokens: acc.totalInputTokens + entry.inputTokens,
+        totalOutputTokens: acc.totalOutputTokens + entry.outputTokens,
+        totalCalls: acc.totalCalls + 1,
+        estimatedCost: 0,
+      }),
+      { totalInputTokens: 0, totalOutputTokens: 0, totalCalls: 0, estimatedCost: 0 }
+    );
+
+    // Approximate pricing for Claude Sonnet (per million tokens)
+    const inputCostPerM = 3.0;
+    const outputCostPerM = 15.0;
+    summary.estimatedCost =
+      (summary.totalInputTokens / 1_000_000) * inputCostPerM +
+      (summary.totalOutputTokens / 1_000_000) * outputCostPerM;
+
+    return summary;
   }
 }

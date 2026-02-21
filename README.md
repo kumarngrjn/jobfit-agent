@@ -50,6 +50,12 @@ Key design decisions:
 - **Caching** — SHA-256 hashed file cache avoids re-parsing identical inputs
 - **Token tracking** — every run logs token usage and estimated cost
 
+## Design Notes
+
+- **INTAKE state is context-only** — `INTAKE` is recorded in pipeline history as the initial context state, while graph execution starts at `PARSE_JD`. This keeps the graph focused on executable nodes.
+- **Anthropic-only provider is intentional (for now)** — the current implementation optimizes for one provider path to keep reliability, retry semantics, and token accounting simple. Multi-provider support is a planned extension, not an accidental gap.
+- **`compare` is directory-based by design** — `jobfit compare` compares previously generated runs from `output/` directories, enabling offline, deterministic comparisons without re-calling the model.
+
 ## CLI Usage
 
 ### Analyze a job posting

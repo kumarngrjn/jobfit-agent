@@ -1,16 +1,19 @@
 import https from "https";
 import http from "http";
+import { load } from "cheerio";
+import { Readability } from "@mozilla/readability";
+import { JSDOM } from "jsdom";
 import { getCached, setCache } from "../utils/cache.js";
 
 /**
  * Scrapes a job posting URL and extracts clean text.
- * Uses Node built-in https module — zero dependencies.
+ * Uses Readability + Cheerio for robust extraction.
  *
  * Strategy:
  * 1. Fetch the HTML
- * 2. Strip script/style tags
- * 3. Extract text from common job posting containers
- * 4. Clean up whitespace
+ * 2. Extract article text via Readability
+ * 3. Fallback extraction via Cheerio heuristics
+ * 4. Normalize whitespace
  *
  * Fallback: if scraping fails, caller prompts user to paste JD text.
  */
@@ -80,82 +83,64 @@ function fetchUrl(url: string, maxRedirects = 5): Promise<string> {
   });
 }
 
-/**
- * Extract readable text from raw HTML.
- * A lightweight approach without Cheerio/Readability:
- * - Remove script, style, nav, footer, header tags
- * - Extract text from the main content area
- * - Clean up whitespace
- */
-function htmlToText(html: string): { text: string; title: string } {
-  // Extract title
-  const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-  const title = titleMatch
-    ? titleMatch[1].replace(/\s+/g, " ").trim()
-    : "Untitled";
-
-  // Remove unwanted sections
-  let cleaned = html;
-
-  // Remove script, style, nav, footer, header, svg, iframe
-  const removeTags = [
-    "script",
-    "style",
-    "nav",
-    "footer",
-    "header",
-    "svg",
-    "iframe",
-    "noscript",
-  ];
-  for (const tag of removeTags) {
-    const regex = new RegExp(
-      `<${tag}[^>]*>[\\s\\S]*?<\\/${tag}>`,
-      "gi"
-    );
-    cleaned = cleaned.replace(regex, "");
-  }
-
-  // Try to find main content area
-  const mainContentPatterns = [
-    /<main[^>]*>([\s\S]*?)<\/main>/i,
-    /<article[^>]*>([\s\S]*?)<\/article>/i,
-    /<div[^>]*class="[^"]*(?:job|posting|description|content|main)[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
-    /<div[^>]*id="[^"]*(?:job|posting|description|content|main)[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
-  ];
-
-  let contentHtml = cleaned;
-  for (const pattern of mainContentPatterns) {
-    const match = cleaned.match(pattern);
-    if (match && match[1] && match[1].length > 200) {
-      contentHtml = match[1];
-      break;
-    }
-  }
-
-  // Convert common HTML elements to readable text
-  let text = contentHtml
-    // Line breaks for block elements
-    .replace(/<(?:p|div|br|h[1-6]|li|tr|section)[^>]*>/gi, "\n")
-    .replace(/<\/(?:p|div|h[1-6]|li|tr|section)>/gi, "\n")
-    // Bullets for list items
-    .replace(/<li[^>]*>/gi, "\n• ")
-    // Strip all remaining HTML tags
-    .replace(/<[^>]+>/g, " ")
-    // Decode common HTML entities
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&#x27;/g, "'")
-    .replace(/&#x2F;/g, "/")
-    // Clean up whitespace
+function normalizeText(raw: string): string {
+  return raw
+    .replace(/\r\n/g, "\n")
     .replace(/[ \t]+/g, " ")
     .replace(/\n[ \t]+/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+function extractTitle(html: string): string {
+  const $ = load(html);
+  return $("title").first().text().trim() || "Untitled";
+}
+
+function extractWithReadability(html: string, url: string): string {
+  const dom = new JSDOM(html, { url });
+  const article = new Readability(dom.window.document).parse();
+  return normalizeText(article?.textContent ?? "");
+}
+
+function extractWithCheerio(html: string): string {
+  const $ = load(html);
+
+  $("script, style, nav, footer, header, svg, iframe, noscript").remove();
+
+  const candidates = [
+    "main",
+    "article",
+    '[class*="job-description"]',
+    '[class*="job-posting"]',
+    '[class*="description"]',
+    '[id*="job-description"]',
+    '[id*="job-posting"]',
+    '[id*="description"]',
+  ];
+
+  let bestText = "";
+
+  for (const selector of candidates) {
+    const text = normalizeText($(selector).first().text());
+    if (text.length > bestText.length) {
+      bestText = text;
+    }
+  }
+
+  if (bestText.length >= 100) {
+    return bestText;
+  }
+
+  return normalizeText($("body").text());
+}
+
+function htmlToText(html: string, url: string): { text: string; title: string } {
+  const title = extractTitle(html);
+  const readabilityText = extractWithReadability(html, url);
+  const cheerioText = extractWithCheerio(html);
+
+  const text = readabilityText.length >= cheerioText.length ? readabilityText : cheerioText;
 
   return { text, title };
 }
@@ -173,7 +158,7 @@ export async function scrapeJobPosting(
     const html = await fetchUrl(url);
     console.log(`  ✓ Fetched ${html.length} bytes`);
 
-    const { text, title } = htmlToText(html);
+    const { text, title } = htmlToText(html, url);
 
     if (text.length < 100) {
       throw new Error(

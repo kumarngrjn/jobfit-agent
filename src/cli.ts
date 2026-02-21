@@ -1,22 +1,36 @@
 #!/usr/bin/env node
 
 import { Command } from "commander";
-import { readFileSync, existsSync, writeFileSync, mkdirSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-import { LLMClient, getUsageSummary } from "./llm/client.js";
+import { createInterface } from "readline/promises";
+import { LLMClient } from "./llm/client.js";
 import { runOrchestrator } from "./agent/orchestrator.js";
 import { scrapeJobPosting } from "./tools/scraper.js";
 import { parseFile } from "./utils/file-parser.js";
 import { logger } from "./utils/logger.js";
 import { loadAllRuns } from "./utils/run-loader.js";
+import { writeRunOutputs } from "./utils/output-writer.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const OUTPUT_ROOT = join(__dirname, "../output");
 
 const program = new Command();
+
+async function promptForJDText(): Promise<string> {
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  const jdText = await rl.question("Paste the full job description text, then press Enter:\n");
+  rl.close();
+
+  return jdText.trim();
+}
 
 program
   .name("jobfit")
@@ -47,8 +61,21 @@ program
 
     if (isUrl) {
       console.log(`🌐 Scraping job posting: ${source}`);
-      const scrapeResult = await scrapeJobPosting(source);
-      jdText = scrapeResult.text;
+      try {
+        const scrapeResult = await scrapeJobPosting(source);
+        jdText = scrapeResult.text;
+      } catch (error: any) {
+        console.warn(`⚠ Scraping failed: ${error.message}`);
+        if (!process.stdin.isTTY) {
+          throw new Error("Scraping failed in non-interactive mode. Provide a JD text file path instead of URL.");
+        }
+
+        jdText = await promptForJDText();
+        if (!jdText) {
+          throw new Error("Job description text is required after scraping fallback.");
+        }
+        console.log(`📋 Using pasted JD text (${jdText.length} chars)`);
+      }
     } else {
       const jdPath = resolve(source);
       if (!existsSync(jdPath)) {
@@ -98,48 +125,14 @@ program
       ? resolve(opts.output)
       : join(OUTPUT_ROOT, `${dateStr}_${company}_${role}`);
 
-    if (!existsSync(outputDir)) mkdirSync(outputDir, { recursive: true });
-
-    writeFileSync(
-      join(outputDir, "analysis.json"),
-      JSON.stringify(
-        { parsedJD: ctx.parsedJD, parsedResume: ctx.parsedResume, fitAnalysis: ctx.fitAnalysis },
-        null,
-        2
-      )
-    );
-
-    if (ctx.outputs.coverLetter) {
-      writeFileSync(join(outputDir, "cover-letter.md"), ctx.outputs.coverLetter);
-    }
-    if (ctx.outputs.tailoredBullets) {
-      writeFileSync(join(outputDir, "tailored-bullets.md"), ctx.outputs.tailoredBullets);
-    }
-    if (ctx.outputs.interviewPrep) {
-      writeFileSync(join(outputDir, "interview-prep.md"), ctx.outputs.interviewPrep);
-    }
-
-    writeFileSync(
-      join(outputDir, "metadata.json"),
-      JSON.stringify(
-        {
-          timestamp: now.toISOString(),
-          success: result.success,
-          totalDurationMs: result.totalDurationMs,
-          jdSource: source,
-          resumeSource: opts.resume,
-          tokenUsage: result.tokenUsage,
-          stateHistory: ctx.stateHistory,
-          validation: ctx.validation,
-          errors: ctx.errors,
-        },
-        null,
-        2
-      )
-    );
-
-    // Save structured logs
-    logger.saveTo(join(outputDir, "logs.json"));
+    writeRunOutputs(outputDir, ctx, {
+      timestamp: now.toISOString(),
+      success: result.success,
+      totalDurationMs: result.totalDurationMs,
+      jdSource: source,
+      resumeSource: opts.resume,
+      tokenUsage: result.tokenUsage,
+    });
 
     // 5. Summary
     console.log("\n═══════════════════════════════════════");
@@ -150,6 +143,7 @@ program
     );
     console.log(`\n   Generated:`);
     console.log(`   - analysis.json       (Full structured data)`);
+    console.log(`   - fit-report.md       ${ctx.parsedJD && ctx.fitAnalysis ? "✓" : "✗"}`);
     console.log(`   - cover-letter.md     ${ctx.outputs.coverLetter ? "✓" : "✗"}`);
     console.log(`   - tailored-bullets.md ${ctx.outputs.tailoredBullets ? "✓" : "✗"}`);
     console.log(`   - interview-prep.md   ${ctx.outputs.interviewPrep ? "✓" : "✗"}`);

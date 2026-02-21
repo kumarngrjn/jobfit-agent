@@ -10,6 +10,18 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* Focus styles for keyboard navigation */
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    button:focus:not(:focus-visible),
+    input:focus:not(:focus-visible),
+    textarea:focus:not(:focus-visible),
+    select:focus:not(:focus-visible) {
+      outline: none;
+    }
+
     :root {
       --bg: #0f1117;
       --surface: #1a1d27;
@@ -111,7 +123,7 @@
       resize: vertical;
       transition: border-color 0.2s;
     }
-    textarea:focus { outline: none; border-color: var(--accent); }
+    textarea:focus { border-color: var(--accent); }
     textarea::placeholder { color: var(--text-dim); }
 
     label {
@@ -167,7 +179,7 @@
       padding: 10px 16px;
       transition: border-color 0.2s;
     }
-    input[type="text"]:focus, input[type="url"]:focus { outline: none; border-color: var(--accent); }
+    input[type="text"]:focus, input[type="url"]:focus { border-color: var(--accent); }
     input[type="text"]::placeholder, input[type="url"]::placeholder { color: var(--text-dim); }
 
     .or-divider {
@@ -345,6 +357,134 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-step { color: var(--text-dim); font-size: 0.9rem; margin-top: 8px; }
 
+    /* Progress Steps */
+    .progress-steps {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      max-width: 140px;
+      opacity: 0.35;
+      transition: opacity 0.3s;
+    }
+    .progress-step.active, .progress-step.completed { opacity: 1; }
+    .step-indicator {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      transition: all 0.3s;
+    }
+    .progress-step.active .step-indicator {
+      border-color: var(--accent);
+      color: var(--accent-light);
+    }
+    .progress-step.completed .step-indicator {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+    .step-label {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-align: center;
+    }
+    .progress-step.active .step-label { color: var(--text); }
+    .spinner-sm {
+      width: 16px; height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* Progress Bar */
+    .progress-bar-track {
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    /* Skeleton placeholder */
+    .skeleton-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      position: relative;
+      overflow: hidden;
+    }
+    .skeleton-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 200%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer { to { transform: translateX(50%); } }
+
+    /* Section Nav */
+    .section-nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(15, 17, 23, 0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      margin: 0 -24px 20px;
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .section-nav::-webkit-scrollbar { display: none; }
+    .section-nav-link {
+      padding: 10px 16px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: inherit;
+    }
+    .section-nav-link:hover { color: var(--text); }
+    .section-nav-link.active { color: var(--accent-light); border-bottom-color: var(--accent); }
+
+    /* Fade in animation */
+    .fade-in {
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     /* Metadata */
     .meta-row {
       display: flex;
@@ -416,6 +556,22 @@
       color: var(--text);
     }
 
+    /* Copy button */
+    .btn-copy {
+      padding: 6px 14px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .btn-copy:hover { border-color: var(--accent); color: var(--text); }
+
     /* Validation badge */
     .validation-badge {
       display: inline-flex;
@@ -474,7 +630,7 @@
       padding: 6px 12px;
       cursor: pointer;
     }
-    select:focus { outline: none; border-color: var(--accent); }
+    select:focus { border-color: var(--accent); }
 
     /* Empty state */
     .empty-state {
@@ -538,6 +694,12 @@
     }
 
     // --- Score Ring ---
+    function getScoreFitLabel(score) {
+      if (score >= 80) return 'Strong Fit';
+      if (score >= 60) return 'Moderate Fit';
+      return 'Weak Fit';
+    }
+
     function ScoreRing({ score, size }) {
       const sz = size || 140;
       const strokeWidth = sz > 60 ? 8 : 4;
@@ -547,8 +709,9 @@
       const color = score >= 80 ? '#00b894' : score >= 60 ? '#fdcb6e' : '#ff6b6b';
 
       return (
-        <div className={sz > 60 ? 'score-ring' : 'score-ring-sm'} style={sz <= 60 ? { width: sz, height: sz } : undefined}>
-          <svg width={sz} height={sz}>
+        <div className={sz > 60 ? 'score-ring' : 'score-ring-sm'} style={sz <= 60 ? { width: sz, height: sz } : undefined}
+          aria-label={'Fit score: ' + score + ' out of 100, ' + getScoreFitLabel(score)} role="img">
+          <svg width={sz} height={sz} aria-hidden="true">
             <circle cx={sz/2} cy={sz/2} r={radius} fill="none" stroke="#2e3348" strokeWidth={strokeWidth} />
             <circle cx={sz/2} cy={sz/2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth}
               strokeDasharray={circumference} strokeDashoffset={offset}
@@ -597,6 +760,23 @@
       );
     }
 
+    // --- Copy Button ---
+    function CopyButton({ text }) {
+      const [copied, setCopied] = useState(false);
+      const handleCopy = useCallback(() => {
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        });
+      }, [text]);
+      return (
+        <button className="btn-copy" onClick={handleCopy} aria-label="Copy to clipboard">
+          {copied ? '\u2713 Copied!' : 'Copy'}
+        </button>
+      );
+    }
+
     // --- Output Tabs ---
     function OutputTabs({ outputs, validation }) {
       const [activeTab, setActiveTab] = useState('coverLetter');
@@ -609,6 +789,10 @@
         { id: 'interviewPrep', label: 'Interview Prep', icon: '\uD83C\uDFA4' },
       ];
 
+      const activeContent = activeTab === 'coverLetter' ? outputs.coverLetter
+        : activeTab === 'tailoredBullets' ? outputs.tailoredBullets
+        : outputs.interviewPrep;
+
       return (
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -619,23 +803,195 @@
               </span>
             )}
           </div>
-          <div className="tabs">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                className={`tab ${activeTab === tab.id ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {tab.icon} {tab.label}
-              </button>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div className="tabs" style={{ marginBottom: 0 }}>
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  className={`tab ${activeTab === tab.id ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  {tab.icon} {tab.label}
+                </button>
+              ))}
+            </div>
+            {activeContent && <CopyButton text={activeContent} />}
           </div>
-          <div className="content-block">
-            {activeTab === 'coverLetter' && (outputs.coverLetter || 'No cover letter generated.')}
-            {activeTab === 'tailoredBullets' && (outputs.tailoredBullets || 'No bullets generated.')}
-            {activeTab === 'interviewPrep' && (outputs.interviewPrep || 'No interview prep generated.')}
+          <div className="content-block" style={{ marginTop: 16 }}>
+            {activeContent || 'No content generated.'}
           </div>
         </div>
+      );
+    }
+
+    // --- Section Nav (sticky scroll-spy) ---
+    const RESULT_SECTIONS = [
+      { id: 'section-job-overview', label: 'Job Overview' },
+      { id: 'section-fit-score', label: 'Fit Score' },
+      { id: 'section-matches', label: 'Matches & Gaps' },
+      { id: 'section-outputs', label: 'Outputs' },
+      { id: 'section-metadata', label: 'Details' },
+    ];
+
+    function SectionNav() {
+      const [activeId, setActiveId] = useState(RESULT_SECTIONS[0].id);
+
+      useEffect(() => {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                setActiveId(entry.target.id);
+              }
+            }
+          },
+          { rootMargin: '-80px 0px -60% 0px', threshold: 0.1 }
+        );
+
+        RESULT_SECTIONS.forEach(function(s) {
+          const el = document.getElementById(s.id);
+          if (el) observer.observe(el);
+        });
+
+        return () => observer.disconnect();
+      }, []);
+
+      const scrollTo = useCallback((id) => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, []);
+
+      return (
+        <div className="section-nav" role="navigation" aria-label="Results sections">
+          {RESULT_SECTIONS.map(function(s) {
+            return React.createElement('button', {
+              key: s.id,
+              className: 'section-nav-link' + (activeId === s.id ? ' active' : ''),
+              onClick: function() { scrollTo(s.id); }
+            }, s.label);
+          })}
+        </div>
+      );
+    }
+
+    // --- Progressive Results View (during streaming) ---
+    function ProgressiveResults({ data }) {
+      if (!data) return null;
+
+      return (
+        React.createElement('div', null,
+          // Job Overview (from parsedJD)
+          data.parsedJD ? (
+            React.createElement('div', { className: 'card fade-in' },
+              React.createElement('h2', null, '\uD83C\uDFE2 Job Overview'),
+              React.createElement('div', { className: 'job-info' },
+                React.createElement('div', { className: 'job-field' },
+                  React.createElement('label', null, 'Company'),
+                  React.createElement('p', null, data.parsedJD.company)
+                ),
+                React.createElement('div', { className: 'job-field' },
+                  React.createElement('label', null, 'Role'),
+                  React.createElement('p', null, data.parsedJD.role)
+                ),
+                React.createElement('div', { className: 'job-field' },
+                  React.createElement('label', null, 'Level'),
+                  React.createElement('p', null, data.parsedJD.level)
+                ),
+                data.parsedJD.team && React.createElement('div', { className: 'job-field' },
+                  React.createElement('label', null, 'Team'),
+                  React.createElement('p', null, data.parsedJD.team)
+                )
+              ),
+              React.createElement('div', { style: { marginTop: 16 } },
+                React.createElement('label', null, 'Tech Stack'),
+                React.createElement('div', { className: 'tech-pills' },
+                  data.parsedJD.techStack.map(function(t, i) {
+                    return React.createElement('span', { className: 'tech-pill', key: i }, t);
+                  })
+                )
+              )
+            )
+          ) : React.createElement(Skeleton, { height: 120 }),
+
+          // Fit Score (from fitAnalysis)
+          data.fitAnalysis ? (
+            React.createElement('div', { className: 'card score-section fade-in' },
+              React.createElement(ScoreRing, { score: data.fitAnalysis.overallScore, size: 140 }),
+              React.createElement('div', { className: 'score-label' }, 'Overall Fit Score'),
+              React.createElement('div', { className: 'stats-row' },
+                React.createElement('div', { className: 'stat' },
+                  React.createElement('div', { className: 'stat-value', style: { color: 'var(--green)' } }, data.fitAnalysis.strongMatches.length),
+                  React.createElement('div', { className: 'stat-label' }, 'Strong Matches')
+                ),
+                React.createElement('div', { className: 'stat' },
+                  React.createElement('div', { className: 'stat-value', style: { color: 'var(--yellow)' } }, data.fitAnalysis.partialMatches.length),
+                  React.createElement('div', { className: 'stat-label' }, 'Partial Matches')
+                ),
+                React.createElement('div', { className: 'stat' },
+                  React.createElement('div', { className: 'stat-value', style: { color: 'var(--red)' } }, data.fitAnalysis.gaps.length),
+                  React.createElement('div', { className: 'stat-label' }, 'Gaps')
+                ),
+                React.createElement('div', { className: 'stat' },
+                  React.createElement('div', { className: 'stat-value', style: { color: 'var(--accent-light)' } }, data.fitAnalysis.reframingSuggestions.length),
+                  React.createElement('div', { className: 'stat-label' }, 'Reframe Opps')
+                )
+              )
+            )
+          ) : data.parsedJD ? React.createElement(Skeleton, { height: 200 }) : null,
+
+          // Strong Matches and Gaps
+          data.fitAnalysis ? (
+            React.createElement('div', { className: 'two-col fade-in' },
+              React.createElement('div', { className: 'card' },
+                React.createElement('h2', null, '\u2705 Strong Matches'),
+                data.fitAnalysis.strongMatches.map(function(m, i) {
+                  return React.createElement(MatchCard, { key: i, item: m });
+                })
+              ),
+              React.createElement('div', { className: 'card' },
+                React.createElement('h2', null, '\u26A0\uFE0F Gaps to Address'),
+                data.fitAnalysis.gaps.map(function(g, i) {
+                  return React.createElement(GapCard, { key: i, item: g });
+                })
+              )
+            )
+          ) : null,
+
+          // Reframing Suggestions
+          data.fitAnalysis && data.fitAnalysis.reframingSuggestions.length > 0 ? (
+            React.createElement('div', { className: 'card fade-in' },
+              React.createElement('h2', null, '\uD83C\uDFAF Reframing Suggestions'),
+              data.fitAnalysis.reframingSuggestions.map(function(r, i) {
+                return React.createElement(ReframeCard, { key: i, item: r });
+              })
+            )
+          ) : null,
+
+          // Deal Breakers and Competitive Advantages
+          data.fitAnalysis && (data.fitAnalysis.dealBreakers.length > 0 || data.fitAnalysis.competitiveAdvantages.length > 0) ? (
+            React.createElement('div', { className: 'two-col fade-in' },
+              data.fitAnalysis.dealBreakers.length > 0 ? React.createElement('div', { className: 'card' },
+                React.createElement('h2', null, '\uD83D\uDEA8 Potential Deal Breakers'),
+                data.fitAnalysis.dealBreakers.map(function(d, i) {
+                  return React.createElement('div', { className: 'list-item', key: i, style: { borderLeft: '3px solid var(--red)' } }, d);
+                })
+              ) : null,
+              data.fitAnalysis.competitiveAdvantages.length > 0 ? React.createElement('div', { className: 'card' },
+                React.createElement('h2', null, '\uD83D\uDCAA Competitive Advantages'),
+                data.fitAnalysis.competitiveAdvantages.map(function(a, i) {
+                  return React.createElement('div', { className: 'list-item', key: i, style: { borderLeft: '3px solid var(--green)' } }, a);
+                })
+              ) : null
+            )
+          ) : null,
+
+          // Generated Outputs (from outputs)
+          data.outputs ? (
+            React.createElement('div', { className: 'fade-in' },
+              React.createElement(OutputTabs, { outputs: data.outputs, validation: null })
+            )
+          ) : data.fitAnalysis ? React.createElement(Skeleton, { height: 200 }) : null
+        )
       );
     }
 
@@ -646,8 +1002,10 @@
 
       return (
         <div>
+          <SectionNav />
+
           {/* Job Overview */}
-          <div className="card">
+          <div className="card" id="section-job-overview">
             <h2>&#x1F3E2; Job Overview</h2>
             <div className="job-info">
               <div className="job-field"><label>Company</label><p>{parsedJD.company}</p></div>
@@ -665,9 +1023,12 @@
           </div>
 
           {/* Score */}
-          <div className="card score-section">
+          <div className="card score-section" id="section-fit-score">
             <ScoreRing score={fit.overallScore} size={140} />
             <div className="score-label">Overall Fit Score</div>
+            <div style={{ marginTop: 4, fontSize: '0.95rem', fontWeight: 600, color: fit.overallScore >= 80 ? 'var(--green)' : fit.overallScore >= 60 ? 'var(--yellow)' : 'var(--red)' }}>
+              {getScoreFitLabel(fit.overallScore)}
+            </div>
             <div className="stats-row">
               <div className="stat">
                 <div className="stat-value" style={{ color: 'var(--green)' }}>{fit.strongMatches.length}</div>
@@ -689,7 +1050,7 @@
           </div>
 
           {/* Two column: Matches and Gaps */}
-          <div className="two-col">
+          <div className="two-col" id="section-matches">
             <div className="card">
               <h2>&#x2705; Strong Matches</h2>
               {fit.strongMatches.map((m, i) => <MatchCard key={i} item={m} />)}
@@ -733,11 +1094,13 @@
           </div>
 
           {/* Generated Outputs (Phase 2) */}
-          {outputs && <OutputTabs outputs={outputs} validation={validation} />}
+          <div id="section-outputs">
+            {outputs && <OutputTabs outputs={outputs} validation={validation} />}
+          </div>
 
           {/* Metadata */}
           {metadata && (
-            <div className="meta-row">
+            <div className="meta-row" id="section-metadata">
               <span>Model: {metadata.model}</span>
               <span>Total: {metadata.totalDurationMs ?? metadata.durations?.totalMs}ms</span>
               <span>Tokens: {(metadata.tokenUsage?.totalInputTokens ?? 0) + (metadata.tokenUsage?.totalOutputTokens ?? 0)}</span>
@@ -998,6 +1361,66 @@
       );
     }
 
+    // --- Progress Stepper ---
+    const PIPELINE_STEPS = [
+      { key: 'PARSE_JD', label: 'Read Job Posting' },
+      { key: 'PARSE_RESUME', label: 'Read Resume' },
+      { key: 'ANALYZE_FIT', label: 'Analyze Fit' },
+      { key: 'GENERATE_OUTPUTS', label: 'Write Outputs' },
+      { key: 'VALIDATE', label: 'Quality Check' },
+    ];
+
+    function ProgressStepper({ progressState }) {
+      if (!progressState) return null;
+
+      return (
+        React.createElement('div', { className: 'card', style: { padding: '24px 32px' } },
+          React.createElement('div', { className: 'progress-steps' },
+            PIPELINE_STEPS.map(function(step, i) {
+              var isActive = progressState.state === step.key;
+              var isCompleted = progressState.completedStates && progressState.completedStates.includes(step.key);
+              var stepNum = i + 1;
+
+              return React.createElement('div', {
+                key: step.key,
+                className: 'progress-step' + (isActive ? ' active' : '') + (isCompleted ? ' completed' : '')
+              },
+                React.createElement('div', { className: 'step-indicator' },
+                  isCompleted ? '\u2713' : isActive ? React.createElement('div', { className: 'spinner-sm' }) : stepNum
+                ),
+                React.createElement('div', { className: 'step-label' }, step.label)
+              );
+            })
+          ),
+          React.createElement('div', {
+            className: 'progress-bar-track',
+            role: 'progressbar',
+            'aria-valuenow': progressState.step,
+            'aria-valuemin': 0,
+            'aria-valuemax': progressState.totalSteps,
+            'aria-label': 'Analysis progress'
+          },
+            React.createElement('div', {
+              className: 'progress-bar-fill',
+              style: { width: ((progressState.step / progressState.totalSteps) * 100) + '%' }
+            })
+          ),
+          progressState.label && React.createElement('div', {
+            className: 'loading-step',
+            style: { textAlign: 'center', marginTop: 12 }
+          }, progressState.label)
+        )
+      );
+    }
+
+    // --- Skeleton Placeholder ---
+    function Skeleton({ height }) {
+      return React.createElement('div', {
+        className: 'card skeleton-card',
+        style: { minHeight: height || 120 }
+      });
+    }
+
     // --- Analyze Page ---
     function AnalyzePage() {
       const [jdUrl, setJdUrl] = useState('');
@@ -1005,10 +1428,12 @@
       const [resumeFile, setResumeFile] = useState(null);
       const [resumeText, setResumeText] = useState('');
       const [loading, setLoading] = useState(false);
-      const [loadingStep, setLoadingStep] = useState('');
+      const [progressState, setProgressState] = useState(null);
+      const [partialResult, setPartialResult] = useState(null);
       const [result, setResult] = useState(null);
       const [error, setError] = useState('');
       const fileInputRef = React.useRef(null);
+      const abortRef = React.useRef(null);
 
       const handleFileChange = useCallback((e) => {
         const file = e.target.files?.[0];
@@ -1042,64 +1467,128 @@
         setLoading(true);
         setError('');
         setResult(null);
-        setLoadingStep(jdUrl.trim() ? 'Scraping job posting...' : 'Sending to JobFit Agent...');
+        setProgressState({ state: null, step: 0, totalSteps: 5, label: 'Connecting...', completedStates: [] });
+        setPartialResult(null);
+
+        abortRef.current = new AbortController();
 
         try {
-          const steps = [
-            'Parsing job description...',
-            'Parsing resume...',
-            'Analyzing fit...',
-            'Generating cover letter...',
-            'Generating resume bullets...',
-            'Generating interview prep...',
-            'Validating outputs...'
-          ];
-          let stepIndex = 0;
-          const interval = setInterval(() => {
-            stepIndex = Math.min(stepIndex + 1, steps.length - 1);
-            setLoadingStep(steps[stepIndex]);
-          }, 3000);
-
-          let res;
+          let fetchOpts;
           if (jdUrl.trim() || resumeFile) {
             const formData = new FormData();
             if (jdUrl.trim()) formData.append('jdUrl', jdUrl.trim());
             if (jdText.trim()) formData.append('jdText', jdText.trim());
             if (resumeFile) formData.append('resumeFile', resumeFile);
             if (resumeText.trim()) formData.append('resumeText', resumeText.trim());
-            res = await fetch('/api/analyze', { method: 'POST', body: formData });
+            fetchOpts = { method: 'POST', body: formData };
           } else {
-            res = await fetch('/api/analyze', {
+            fetchOpts = {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ jdText, resumeText }),
-            });
+            };
           }
 
-          clearInterval(interval);
-          const data = await res.json();
+          const res = await fetch('/api/analyze/stream', { ...fetchOpts, signal: abortRef.current.signal });
 
           if (!res.ok) {
-            setError(data.error || 'Analysis failed');
-          } else {
-            setResult(data);
+            const errData = await res.json();
+            setError(errData.error || 'Analysis failed');
+            setLoading(false);
+            return;
+          }
+
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+
+            let currentEvent = null;
+            for (const line of lines) {
+              if (line.startsWith('event: ')) {
+                currentEvent = line.slice(7).trim();
+              } else if (line.startsWith('data: ') && currentEvent) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+
+                  if (currentEvent === 'state') {
+                    setProgressState(data);
+                  } else if (currentEvent === 'partial') {
+                    setPartialResult(function(prev) {
+                      var next = Object.assign({}, prev || {});
+                      if (data.type === 'parsedJD') next.parsedJD = data.data;
+                      if (data.type === 'parsedResume') next.parsedResume = data.data;
+                      if (data.type === 'fitAnalysis') next.fitAnalysis = data.data;
+                      if (data.type === 'outputs') next.outputs = data.data;
+                      return next;
+                    });
+                  } else if (currentEvent === 'complete') {
+                    setResult(data);
+                  } else if (currentEvent === 'error') {
+                    setError(data.error || 'Analysis failed');
+                  }
+                } catch (parseErr) {
+                  // skip malformed SSE data lines
+                }
+                currentEvent = null;
+              } else if (line.trim() === '') {
+                currentEvent = null;
+              }
+            }
           }
         } catch (err) {
+          if (err.name === 'AbortError') return; // user cancelled
           setError('Failed to connect to the server. Is it running?');
         } finally {
           setLoading(false);
         }
       }, [jdUrl, jdText, resumeFile, resumeText]);
 
+      const handleCancel = useCallback(() => {
+        if (abortRef.current) abortRef.current.abort();
+        setLoading(false);
+        setProgressState(null);
+        setPartialResult(null);
+      }, []);
+
+      // Ctrl/Cmd+Enter to submit
+      useEffect(() => {
+        const handler = (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !loading) handleAnalyze();
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+      }, [handleAnalyze, loading]);
+
       if (result) {
         return (
           <div>
             <div style={{ textAlign: 'center', marginBottom: 20 }}>
-              <button className="btn btn-primary" onClick={() => { setResult(null); setJdUrl(''); setJdText(''); setResumeFile(null); setResumeText(''); setError(''); if (fileInputRef.current) fileInputRef.current.value = ''; }}>
+              <button className="btn btn-primary" onClick={() => { setResult(null); setPartialResult(null); setProgressState(null); setJdUrl(''); setJdText(''); setResumeFile(null); setResumeText(''); setError(''); if (fileInputRef.current) fileInputRef.current.value = ''; }}>
                 &#x2190; New Analysis
               </button>
             </div>
             <Results data={result} />
+          </div>
+        );
+      }
+
+      if (loading && (partialResult || progressState)) {
+        return (
+          <div>
+            <ProgressStepper progressState={progressState} />
+            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              <button className="btn btn-sm btn-outline" onClick={handleCancel}>Cancel Analysis</button>
+            </div>
+            <ProgressiveResults data={partialResult} />
+            {error && <div className="error-box" style={{ marginTop: 16 }}>{error}</div>}
           </div>
         );
       }
@@ -1109,7 +1598,7 @@
           <div className="card loading">
             <div className="spinner" />
             <h2>Analyzing...</h2>
-            <div className="loading-step">{loadingStep}</div>
+            <div className="loading-step">Sending to JobFit Agent...</div>
           </div>
         );
       }
@@ -1153,6 +1642,10 @@
                 <div
                   className={'file-upload-area' + (resumeFile ? ' has-file' : '')}
                   onClick={() => fileInputRef.current?.click()}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Upload resume file"
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
                 >
                   {resumeFile ? (
                     <div>
@@ -1183,7 +1676,7 @@
           {error && <div className="error-box" style={{ marginBottom: 16 }}>{error}</div>}
 
           <div className="btn-center">
-            <button className="btn btn-primary" onClick={handleAnalyze} disabled={loading}>
+            <button className="btn btn-primary" onClick={handleAnalyze} disabled={loading} title="Ctrl+Enter">
               &#x1F50D; Analyze Fit
             </button>
           </div>
@@ -1202,14 +1695,14 @@
             <p>AI-powered job fit analysis, tracking, and comparison.</p>
           </div>
 
-          <div className="nav">
-            <button className={'nav-tab' + (page === 'analyze' ? ' active' : '')} onClick={() => setPage('analyze')}>
+          <div className="nav" role="tablist" aria-label="Main navigation">
+            <button className={'nav-tab' + (page === 'analyze' ? ' active' : '')} onClick={() => setPage('analyze')} role="tab" aria-selected={page === 'analyze'}>
               &#x1F50D; Analyze
             </button>
-            <button className={'nav-tab' + (page === 'history' ? ' active' : '')} onClick={() => setPage('history')}>
+            <button className={'nav-tab' + (page === 'history' ? ' active' : '')} onClick={() => setPage('history')} role="tab" aria-selected={page === 'history'}>
               &#x1F4CB; History
             </button>
-            <button className={'nav-tab' + (page === 'costs' ? ' active' : '')} onClick={() => setPage('costs')}>
+            <button className={'nav-tab' + (page === 'costs' ? ' active' : '')} onClick={() => setPage('costs')} role="tab" aria-selected={page === 'costs'}>
               &#x1F4B0; Costs
             </button>
           </div>

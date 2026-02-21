@@ -1,4 +1,4 @@
-import { LLMClient, getUsageSummary } from "../llm/client.js";
+import { LLMClient, TokenUsageSummary } from "../llm/client.js";
 import {
   AgentState,
   PipelineContext,
@@ -10,7 +10,7 @@ import { logger } from "../utils/logger.js";
 export interface OrchestratorResult {
   context: PipelineContext;
   success: boolean;
-  tokenUsage: ReturnType<typeof getUsageSummary>;
+  tokenUsage: TokenUsageSummary;
   totalDurationMs: number;
 }
 
@@ -35,7 +35,7 @@ export async function runOrchestrator(
   await runGraph(graph, ctx, llm, AgentState.PARSE_JD, onStateChange);
 
   const totalDurationMs = Date.now() - ctx.startTime;
-  const tokenUsage = getUsageSummary();
+  const tokenUsage = llm.getUsageSummary();
 
   logger.info("Orchestrator finished", {
     state: ctx.currentState,

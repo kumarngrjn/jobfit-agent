@@ -1,9 +1,52 @@
 import type { ParsedJD } from "../llm/schemas.js";
 import type { GeneratedOutputs, ValidationResult } from "./state.js";
 
-const MAX_COVER_LETTER_WORDS = 450;
+const MAX_COVER_LETTER_WORDS = 400;
 const MIN_COVER_LETTER_WORDS = 150;
 const MIN_BULLETS = 4;
+
+const COMPANY_STOPWORDS = new Set([
+  "inc",
+  "inc.",
+  "llc",
+  "ltd",
+  "ltd.",
+  "corp",
+  "corp.",
+  "co",
+  "co.",
+  "company",
+  "technologies",
+]);
+
+function normalizeText(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function matchesCompanyName(content: string, company: string): boolean {
+  const normalizedContent = normalizeText(content);
+  const normalizedCompany = normalizeText(company);
+
+  if (normalizedContent.includes(normalizedCompany)) {
+    return true;
+  }
+
+  const companyTokens = normalizedCompany
+    .split(" ")
+    .filter((token) => token.length >= 3 && !COMPANY_STOPWORDS.has(token));
+
+  if (companyTokens.length === 0) {
+    return false;
+  }
+
+  if (companyTokens.length === 1) {
+    return normalizedContent.includes(companyTokens[0]);
+  }
+
+  return companyTokens[0] !== "" && companyTokens[1] !== ""
+    ? normalizedContent.includes(companyTokens[0]) && normalizedContent.includes(companyTokens[1])
+    : false;
+}
 
 /**
  * Validates the quality of generated outputs.
@@ -40,11 +83,7 @@ export function validateOutputs(
     }
 
     // Check it mentions the company name
-    if (
-      !outputs.coverLetter
-        .toLowerCase()
-        .includes(parsedJD.company.toLowerCase().split(" ")[0])
-    ) {
+    if (!matchesCompanyName(outputs.coverLetter, parsedJD.company)) {
       coverLetterValid = false;
       issues.push("Cover letter doesn't mention the company name");
     }
@@ -112,11 +151,7 @@ export function validateOutputs(
     }
 
     // Check it's not too generic (should mention the company or role)
-    if (
-      !outputs.interviewPrep
-        .toLowerCase()
-        .includes(parsedJD.company.toLowerCase().split(" ")[0])
-    ) {
+    if (!matchesCompanyName(outputs.interviewPrep, parsedJD.company)) {
       interviewPrepValid = false;
       issues.push(
         "Interview prep appears generic — doesn't mention the company"
